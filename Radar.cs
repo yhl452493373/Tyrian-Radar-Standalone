@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace HaloArmour
+namespace Radar
 {
     [BepInPlugin("Tyrian.Radar", "Radar", "1.0.0")]
     public class Radar : BaseUnityPlugin
@@ -24,6 +24,8 @@ namespace HaloArmour
         public static Dictionary<GameObject, HashSet<Material>> objectsMaterials = new Dictionary<GameObject, HashSet<Material>>();
         public static ConfigEntry<bool> radarEnabledConfig;
         public static ConfigEntry<float> radarScaleOffsetConfig;
+        public static ConfigEntry<float> radarDistanceScaleOffsetConfig;
+        public static ConfigEntry<float> radarHeightThresholdeScaleOffsetConfig;
         public static ConfigEntry<float> radarOffsetYConfig;
         public static ConfigEntry<float> radarOffsetXConfig;
         public static ManualLogSource logger;
@@ -50,6 +52,8 @@ namespace HaloArmour
             // Add a custom configuration option for the Apply button
             radarEnabledConfig = Config.Bind("B - Radar Settings", "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
             radarScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("The Scale Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
+            radarDistanceScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Disntance Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
+            radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Height Threshold Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new BepInEx.Configuration.AcceptableValueRange<float>(1f, 4f)));
             radarOffsetYConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Y Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The Y Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD X Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The X Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
         }
@@ -69,7 +73,7 @@ namespace HaloArmour
 
             if (radarEnabledConfig.Value)
             {
-                    GameObject gamePlayerObject = Player.gameObject;
+                GameObject gamePlayerObject = Player.gameObject;
                     if (gamePlayerObject.GetComponent<HaloRadar>() == null && radarEnabledConfig.Value)
                     {
                         HaloRadar haloRadar = gamePlayerObject.AddComponent<HaloRadar>();
@@ -145,6 +149,18 @@ namespace HaloArmour
                 {
                     player = gameWorld.MainPlayer;
                     playerTransform = player.Transform;
+                    Renderer[] renderers = player.GetComponentsInChildren<Renderer>();
+                    float minBoundsY = float.MaxValue;
+                    float maxBoundsY = float.MinValue;
+                    foreach (Renderer renderer in renderers)
+                    {
+                        Bounds bounds = renderer.bounds;
+                        if (bounds.min.y < minBoundsY)
+                            minBoundsY = bounds.min.y;
+                        if (bounds.max.y > maxBoundsY)
+                            maxBoundsY = bounds.max.y;
+                    }
+                    Radar.playerHeight = maxBoundsY - minBoundsY;
                 }
 
                 if (playerCamera == null)
@@ -312,7 +328,7 @@ namespace HaloArmour
                     radarHudBlip = blip.transform.Find("Blip/RadarEnemyBlip") as RectTransform;
                     blipImage = radarHudBlip.GetComponent<Image>();
                     float yDifference = enemyObject.transform.position.y - player.Transform.position.y;
-                    float totalThreshold = Radar.playerHeight + Radar.playerHeight / 2f;
+                    float totalThreshold = (Radar.playerHeight + Radar.playerHeight / 2f) * Radar.radarHeightThresholdeScaleOffsetConfig.Value;
                     if (Mathf.Abs(yDifference) <= totalThreshold)
                     {
                         blipImage.sprite = EnemyBlip;
@@ -339,7 +355,7 @@ namespace HaloArmour
                     float distance = Mathf.Sqrt(x * x + z * z);
                     // Calculate the offset factor based on the distance
                     float offsetFactor = Mathf.Clamp(distance / radarRange, 2f, 4f);
-                    float offsetDistance = distance * offsetFactor;
+                    float offsetDistance = (distance * offsetFactor) * Radar.radarDistanceScaleOffsetConfig.Value;
                     float angleInRadians = Mathf.Atan2(x, z);
                     Vector2 position = new Vector2(Mathf.Sin(angleInRadians - angle * Mathf.Deg2Rad), Mathf.Cos(angleInRadians - angle * Mathf.Deg2Rad)) * offsetDistance;
 

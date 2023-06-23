@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\RadarStandalone\\Radar.csproj",
+      "projectUniqueName": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\Radar.csproj",
       "projectName": "Tyrian-Radar",
-      "projectPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\RadarStandalone\\Radar.csproj",
+      "projectPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\Radar.csproj",
       "packagesPath": "C:\\Users\\thebo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\RadarStandalone\\obj\\",
+      "outputPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
