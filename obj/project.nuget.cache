@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9hAKvfS35kS/yIkO60TwsyD1v4fHdAkvOlKQzXiRL6mrsfI612vRtGoI7eWchEprRo5M1DDjgID2Z/vfFX/9jw==",
+  "dgSpecHash": "orwJhX3q4xSrmxxYulNXzAWlFyKdukCBxW6fSRlxYMd36H93dZpTlhQ0Mi/IrJZHiWmCmyIbwhBQO5aGKNQBsw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\Radar.csproj",
+  "projectFilePath": "E:\\Development\\Tyrian-Radar-Standalone\\Radar.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

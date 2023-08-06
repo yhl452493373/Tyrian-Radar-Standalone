@@ -8,24 +8,19 @@
     ".NETFramework,Version=v4.7.2": []
   },
   "packageFolders": {
-    "C:\\Users\\thebo\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\danie\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\Radar.csproj",
+      "projectUniqueName": "E:\\Development\\Tyrian-Radar-Standalone\\Radar.csproj",
       "projectName": "Tyrian-Radar",
-      "projectPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\Radar.csproj",
-      "packagesPath": "C:\\Users\\thebo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\thebo\\Desktop\\TarkovProjects\\GithubStuff\\Client Mod Stuff\\RadarStandalone\\Radar\\obj\\",
+      "projectPath": "E:\\Development\\Tyrian-Radar-Standalone\\Radar.csproj",
+      "packagesPath": "C:\\Users\\danie\\.nuget\\packages\\",
+      "outputPath": "E:\\Development\\Tyrian-Radar-Standalone\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\thebo\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\danie\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -50,7 +45,7 @@
     "frameworks": {
       "net472": {
         "targetAlias": "net472",
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.416\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.306\\RuntimeIdentifierGraph.json"
       }
     }
   }

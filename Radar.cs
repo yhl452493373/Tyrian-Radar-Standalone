@@ -28,6 +28,7 @@ namespace Radar
         public static ConfigEntry<float> radarHeightThresholdeScaleOffsetConfig;
         public static ConfigEntry<float> radarOffsetYConfig;
         public static ConfigEntry<float> radarOffsetXConfig;
+        public static ConfigEntry<float> radarRangeConfig;
         public static ManualLogSource logger;
         public static float playerHeight = 0f;
 
@@ -56,6 +57,7 @@ namespace Radar
             radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Height Threshold Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new BepInEx.Configuration.AcceptableValueRange<float>(1f, 4f)));
             radarOffsetYConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Y Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The Y Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD X Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The X Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
+            radarRangeConfig = Config.Bind<float>("B - Radar Settings", "Radar Range", 128f, new BepInEx.Configuration.ConfigDescription("The range within which enemies are displayed on the radar.", new BepInEx.Configuration.AcceptableValueRange<float>(32f, 512f)));
         }
 
         private void Update()
@@ -197,6 +199,7 @@ namespace Radar
                         {
                             radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
                         }
+                        radarRange = Radar.radarRangeConfig.Value;
                         UpdateEnemyObjects();
                     }
                     else if (radarHud != null)
@@ -247,7 +250,7 @@ namespace Radar
         private void UpdateEnemyObjects()
         {
             // Get the current players in gameWorld.AllPlayers and convert to a list
-            List<Player> players = gameWorld.AllPlayers.ToList();
+            List<Player> players = gameWorld.AllAlivePlayersList.ToList();
 
             // Exclude gameWorld.MainPlayer from the players list
             players.Remove(gameWorld.MainPlayer);
