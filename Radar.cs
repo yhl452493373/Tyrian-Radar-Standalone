@@ -67,9 +67,13 @@ namespace Radar
 
             GameObject gamePlayerObject = player.gameObject;
             HaloRadar haloRadar = gamePlayerObject.GetComponent<HaloRadar>();
+
             if (radarEnabledConfig.Value && haloRadar == null) {
+                // Add the HaloRadar component if it doesn't exist.
                 gamePlayerObject.AddComponent<HaloRadar>();
             } else if (!radarEnabledConfig.Value && haloRadar != null) {
+                // Remove the HaloRadar component if it exists.
+                haloRadar.Destory();
                 Destroy(haloRadar);
             }
         }
@@ -84,11 +88,8 @@ namespace Radar
         public static GameObject radarHud;
         public static GameObject radarBlipHud;
         public static GameObject playerCamera;
-        private Player[] enemyList;
 
         private Dictionary<Player, GameObject> enemyBlips;
-
-        public static GameObject radarHudBlipParent;
         public static RectTransform radarHudBlipBasePosition { get; private set; }
         public static RectTransform radarHudBasePosition { get; private set; }
         public static RectTransform radarHudPulse { get; private set; }
@@ -109,9 +110,8 @@ namespace Radar
         public float radarRange = 128; // The range within which enemies are displayed on the radar
 
         private void Start() {
-            enemyList = new Player[0];
             enemyBlips = new Dictionary<Player, GameObject>();
-            // Create our prefabs from our bundles and shit.
+            // Create our prefabs from our bundles.
             if (RadarhudPrefab == null) {
                 String haloRadarHUD = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/radar/radarhud.bundle");
                 if (!File.Exists(haloRadarHUD))
@@ -121,6 +121,10 @@ namespace Radar
                     return;
                 RadarhudPrefab = radarBundle.LoadAsset("Assets/Examples/Halo Reach/Hud/RadarHUD.prefab");
                 RadarBliphudPrefab = radarBundle.LoadAsset("Assets/Examples/Halo Reach/Hud/RadarBlipHUD.prefab");
+
+                EnemyBlip = radarBundle.LoadAsset<Sprite>("EnemyBlip");
+                EnemyBlipUp = radarBundle.LoadAsset<Sprite>("EnemyBlipUp");
+                EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
             }
         }
 
@@ -148,49 +152,38 @@ namespace Radar
                 }
 
                 if (playerCamera != null) {
-                    if (Radar.radarEnabledConfig.Value) {
-                        if (radarHud == null) {
-                            var radarHudBase = Instantiate(RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
-                            radarHud = radarHudBase as GameObject;
-                            radarHud.transform.parent = playerCamera.transform;
-                            radarHudBasePosition = radarHud.transform.Find("Radar") as RectTransform;
-                            radarHudBlipBasePosition = radarHud.transform.Find("Radar/RadarBorder") as RectTransform;
-                            radarHudPulse = radarHud.transform.Find("Radar/RadarPulse") as RectTransform;
-                            radarScaleStart = radarHudBasePosition.localScale;
-                            radarPositionYStart = radarHudBasePosition.position.y;
-                            radarPositionXStart = radarHudBasePosition.position.x;
-                            StartPulseAnimation();
-                        }
-                        if (!radarHud.activeSelf) {
-                            radarHud.SetActive(true);
-                        }
-                        if (radarHudBasePosition.position.y != radarPositionYStart + Radar.radarOffsetYConfig.Value
-                         || radarHudBasePosition.position.x != radarPositionXStart + Radar.radarOffsetXConfig.Value) {
-                            radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
-                        }
-                        if (radarHudBasePosition.localScale.y != radarScaleStart.y * Radar.radarScaleOffsetConfig.Value
-                         && radarHudBasePosition.localScale.x != radarScaleStart.x * Radar.radarScaleOffsetConfig.Value) {
-                            radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
-                        }
-
-                        if (radarHudBlipParent == null) {
-                            radarHudBlipParent = new GameObject("BlipParent");
-                            radarHudBlipParent.transform.parent = playerCamera.transform;
-                            radarHudBlipParent.transform.SetAsLastSibling(); // If necessary, set to render on top
-                        }
-                        // sync position
-                        radarHudBlipParent.transform.position = radarHudBlipBasePosition.position;
-
-                        radarRange = Radar.radarRangeConfig.Value;
-                        UpdateEnemyObjects();
-                    } else if (radarHud != null) {
-                        radarHud.SetActive(false);
+                    if (radarHud == null) {
+                        var radarHudBase = Instantiate(RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
+                        radarHud = radarHudBase as GameObject;
+                        radarHud.transform.parent = playerCamera.transform;
+                        radarHudBasePosition = radarHud.transform.Find("Radar") as RectTransform;
+                        radarHudBlipBasePosition = radarHud.transform.Find("Radar/RadarBorder") as RectTransform;
+                        radarHudBlipBasePosition.SetAsLastSibling();
+                        radarHudPulse = radarHud.transform.Find("Radar/RadarPulse") as RectTransform;
+                        radarScaleStart = radarHudBasePosition.localScale;
+                        radarPositionYStart = radarHudBasePosition.position.y;
+                        radarPositionXStart = radarHudBasePosition.position.x;
+                        radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
+                        radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
+                        radarHud.SetActive(true);
+                        StartPulseAnimation();
                     }
+
+                    radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
+                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
+
+                    radarRange = Radar.radarRangeConfig.Value;
+                    UpdateEnemyObjects();
                     
                     if (radarHud != null) {
                         radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
                     }
                 }
+            }
+        }
+        public void Destory() {
+            if (radarHud != null) {
+                Destroy(radarHud);
             }
         }
 
@@ -229,20 +222,11 @@ namespace Radar
             // Exclude gameWorld.MainPlayer from the players list
             players.Remove(gameWorld.MainPlayer);
 
-            // Resize the enemyObjects array to match the number of players
-            enemyList = new Player[players.Count];
-
-            // Add the player game objects to the enemyObjects array
-            for (int i = 0; i < players.Count; i++) {
-                enemyList[i] = players[i];
-            }
-
             List<Player> activeEnemyObjects = new List<Player>();
             List<Player> blipsToRemove = new List<Player>();
-            foreach (Player enemyPlayer in enemyList) {
-                GameObject enemyObject = enemyPlayer.gameObject;
+            foreach (Player enemyPlayer in players) {
                 // Calculate the relative position of the enemy object
-                Vector3 relativePosition = enemyObject.transform.position - playerTransform.position;
+                Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
 
                 // Check if the enemy is within the radar range
                 if (relativePosition.magnitude <= radarRange) {
@@ -259,15 +243,6 @@ namespace Radar
                 // Update blips on the radar for the enemies.
                 UpdateBlips(enemyPlayer);
             }
-            foreach (Player enemyPlayer in blipsToRemove) {
-                // Remove out of range blips on the radar for the enemies.
-                RemoveOutOfRangeBlip(enemyPlayer);
-            }
-            foreach (var enemyBlip in enemyBlips.Keys.ToList()) {
-                if (!activeEnemyObjects.Contains(enemyBlip)) {
-                    RemoveOutOfRangeBlip(enemyBlip);
-                }
-            }
         }
         private void UpdateBlips(Player enemyPlayer) {
             if (enemyPlayer == null)
@@ -283,10 +258,9 @@ namespace Radar
                     // Instantiate a blip game object and set its position relative to the radar HUD
                     var radarHudBlipBase = Instantiate(RadarBliphudPrefab, radarHudBlipBasePosition.position, radarHudBlipBasePosition.rotation);
                     radarBlipHud = radarHudBlipBase as GameObject;
-                    radarBlipHud.transform.parent = radarHudBlipParent.transform;
-                    EnemyBlip = radarBundle.LoadAsset<Sprite>("EnemyBlip");
-                    EnemyBlipUp = radarBundle.LoadAsset<Sprite>("EnemyBlipUp");
-                    EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
+                    radarBlipHud.transform.parent = radarHudBlipBasePosition.transform;
+                    radarBlipHud.transform.SetAsLastSibling();
+
                     // Add the enemy object and its blip to the dictionary
                     enemyBlips.Add(enemyPlayer, radarBlipHud);
                     blip = radarBlipHud;
@@ -319,9 +293,6 @@ namespace Radar
                             blipImage.color = Color.red;
                             break;
                     }
-
-                    blip.transform.parent = radarHudBlipBasePosition.transform;
-                    // Apply the scale to the blip
 
                     // Apply the rotation of the parent transform
                     Quaternion parentRotation = radarHudBlipBasePosition.rotation;
@@ -359,51 +330,36 @@ namespace Radar
                 }
             } else {
                 // Remove the inactive enemy blips from the dictionary and destroy the blip game objects
-                if (enemyBlips.TryGetValue(enemyPlayer, out GameObject blip)) {
-                    enemyBlips.Remove(enemyPlayer);
-                    Destroy(blip);
-                }
+                RemoveBlip(enemyPlayer);
             }
         }
 
-        private void RemoveOutOfRangeBlip(Player enemyPlayer)
-        {
-            if (enemyBlips.ContainsKey(enemyPlayer))
-            {
+        private void RemoveBlip(Player enemyPlayer) {
+            if (enemyBlips.ContainsKey(enemyPlayer)) {
                 // Remove the blip game object from the scene
                 GameObject blip = enemyBlips[enemyPlayer];
                 enemyBlips.Remove(enemyPlayer);
                 Destroy(blip);
             }
         }
-        private void RemoveInactiveEnemyBlips(List<Player> activeEnemyObjects, List<Player> blipsToRemove)
-        {
-            // Create a list to store the enemy objects that need to be removed
-            List<Player> enemiesToRemove = new List<Player>();
-
+        private void RemoveInactiveEnemyBlips(List<Player> activeEnemyObjects, List<Player> blipsToRemove) {
             // Iterate through the enemyBlips dictionary
             foreach (var enemyBlip in enemyBlips) {
                 Player enemyPlayer = enemyBlip.Key;
 
                 // Check if the enemy object is not in the activeEnemyObjects list
-                if (!activeEnemyObjects.Contains(enemyPlayer))
-                {
+                if (!activeEnemyObjects.Contains(enemyPlayer)) {
                     // Add the enemy object to the enemiesToRemove list
-                    enemiesToRemove.Add(enemyPlayer);
+                    blipsToRemove.Add(enemyPlayer);
                 }
             }
 
             // Iterate through the enemiesToRemove list and remove blips
-            foreach (Player enemyPlayer in enemiesToRemove)
-            {
+            foreach (Player enemyPlayer in blipsToRemove) {
                 // Check if the enemy object exists in the enemyBlips dictionary
-                if (enemyBlips.TryGetValue(enemyPlayer, out GameObject blip))
-                {
-                    // Remove the blip game object from the scene
-                    enemyBlips.Remove(enemyPlayer);
-                    Destroy(blip);
-                }
+                RemoveBlip(enemyPlayer);
             }
+
         }
     }
 }
