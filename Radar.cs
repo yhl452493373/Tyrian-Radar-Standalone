@@ -48,8 +48,8 @@ namespace Radar
 
             // Add a custom configuration option for the Apply button
             radarEnabledConfig = Config.Bind("B - Radar Settings", "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
-            radarScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("The Scale Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
-            radarDistanceScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Disntance Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
+            radarScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("The Scale Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(0.0f, 1f)));
+            radarDistanceScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Disntance Scale Offset", 0f, new BepInEx.Configuration.ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
             radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Height Threshold Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new BepInEx.Configuration.AcceptableValueRange<float>(1f, 4f)));
             radarOffsetYConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Y Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The Y Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD X Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The X Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
@@ -239,6 +239,7 @@ namespace Radar
             }
             // Remove blips for any enemy objects that are no longer active
             RemoveInactiveEnemyBlips(activeEnemyObjects, blipsToRemove);
+
             foreach (Player enemyPlayer in activeEnemyObjects) {
                 // Update blips on the radar for the enemies.
                 UpdateBlips(enemyPlayer);
@@ -280,34 +281,35 @@ namespace Radar
                         blipImage.sprite = EnemyBlipDown;
                     }
 
-                    switch (enemyPlayer.Profile.Info.Settings.Role) {
-                        case WildSpawnType.pmcBot:
-                        case WildSpawnType.exUsec:
+                    switch (enemyPlayer.Profile.Info.Side) {
+                        case EPlayerSide.Savage:
+                            switch (enemyPlayer.Profile.Info.Settings.Role) {
+                                case WildSpawnType.assault:
+                                case WildSpawnType.marksman:
+                                    blipImage.color = Color.green;
+                                    break;
+                                default:
+                                    blipImage.color = Color.red;
+                                    break;
+                            }
+                            break;
+                        case EPlayerSide.Bear:
+                        case EPlayerSide.Usec:
                             blipImage.color = Color.yellow;
                             break;
-                        case WildSpawnType.assault:
-                        case WildSpawnType.marksman:
-                            blipImage.color = Color.green;
-                            break;
                         default:
-                            blipImage.color = Color.red;
                             break;
                     }
-
-                    // Apply the rotation of the parent transform
-                    Quaternion parentRotation = radarHudBlipBasePosition.rotation;
-                    Vector3 rotatedDirection = parentRotation * Vector3.forward;
-
-                    // Calculate the angle based on the rotated direction
-                    float angle = Mathf.Atan2(rotatedDirection.x, rotatedDirection.z) * Mathf.Rad2Deg;
 
                     // Calculate the position based on the angle and distance
                     float distance = Mathf.Sqrt(x * x + z * z);
                     // Calculate the offset factor based on the distance
-                    float offsetFactor = Mathf.Clamp(distance / radarRange, 2f, 4f);
-                    float offsetDistance = (distance * offsetFactor) * Radar.radarDistanceScaleOffsetConfig.Value;
+                    float offsetRadius = Mathf.Pow(distance / radarRange, 0.3f + Radar.radarDistanceScaleOffsetConfig.Value * Radar.radarDistanceScaleOffsetConfig.Value / 2.0f);
+                    // Calculate angle
+                    // Apply the rotation of the parent transform
+                    Vector3 rotatedDirection = radarHudBlipBasePosition.rotation * Vector3.forward;
+                    float angle = Mathf.Atan2(rotatedDirection.x, rotatedDirection.z) * Mathf.Rad2Deg;
                     float angleInRadians = Mathf.Atan2(x, z);
-                    Vector2 position = new Vector2(Mathf.Sin(angleInRadians - angle * Mathf.Deg2Rad), Mathf.Cos(angleInRadians - angle * Mathf.Deg2Rad)) * offsetDistance;
 
                     // Get the scale of the radarHudBlipBasePosition
                     Vector3 scale = radarHudBlipBasePosition.localScale;
@@ -316,15 +318,13 @@ namespace Radar
                     scaledSizeDelta.x *= scale.x;
                     scaledSizeDelta.y *= scale.y;
                     // Calculate the radius of the circular boundary
-                    float radius = Mathf.Min(scaledSizeDelta.x, scaledSizeDelta.y) * 0.5f;
-                    // Clamp the position within the circular boundary
-                    float distanceFromCenter = position.magnitude;
-                    if (distanceFromCenter > radius)
-                    {
-                        position = position.normalized * radius;
-                    }
+                    float graphicRadius = Mathf.Min(scaledSizeDelta.x, scaledSizeDelta.y) * 0.68f;
+
                     // Set the local position of the blip
-                    blip.transform.localPosition = position;
+                    blip.transform.localPosition = new Vector2(
+                        Mathf.Sin(angleInRadians - angle * Mathf.Deg2Rad),
+                        Mathf.Cos(angleInRadians - angle * Mathf.Deg2Rad))
+                        * offsetRadius * graphicRadius;
                     Quaternion reverseRotation = Quaternion.Inverse(radarHudBlipBasePosition.rotation);
                     blip.transform.localRotation = reverseRotation;
                 }
