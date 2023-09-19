@@ -87,6 +87,8 @@ namespace Radar
         private Player[] enemyList;
 
         private Dictionary<Player, GameObject> enemyBlips;
+
+        public static GameObject radarHudBlipParent;
         public static RectTransform radarHudBlipBasePosition { get; private set; }
         public static RectTransform radarHudBasePosition { get; private set; }
         public static RectTransform radarHudPulse { get; private set; }
@@ -110,8 +112,7 @@ namespace Radar
             enemyList = new Player[0];
             enemyBlips = new Dictionary<Player, GameObject>();
             // Create our prefabs from our bundles and shit.
-            if (RadarhudPrefab == null)
-            {
+            if (RadarhudPrefab == null) {
                 String haloRadarHUD = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/radar/radarhud.bundle");
                 if (!File.Exists(haloRadarHUD))
                     return;
@@ -171,11 +172,22 @@ namespace Radar
                          && radarHudBasePosition.localScale.x != radarScaleStart.x * Radar.radarScaleOffsetConfig.Value) {
                             radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
                         }
+
+                        if (radarHudBlipParent == null) {
+                            radarHudBlipParent = new GameObject("BlipParent");
+                            radarHudBlipParent.transform.parent = playerCamera.transform;
+                            radarHudBlipParent.transform.SetAsLastSibling(); // If necessary, set to render on top
+                        }
+                        // sync position
+                        radarHudBlipParent.transform.position = radarHudBlipBasePosition.position;
+
                         radarRange = Radar.radarRangeConfig.Value;
                         UpdateEnemyObjects();
                     } else if (radarHud != null) {
                         radarHud.SetActive(false);
-                    } if (radarHud != null) {
+                    }
+                    
+                    if (radarHud != null) {
                         radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
                     }
                 }
@@ -271,7 +283,7 @@ namespace Radar
                     // Instantiate a blip game object and set its position relative to the radar HUD
                     var radarHudBlipBase = Instantiate(RadarBliphudPrefab, radarHudBlipBasePosition.position, radarHudBlipBasePosition.rotation);
                     radarBlipHud = radarHudBlipBase as GameObject;
-                    radarBlipHud.transform.parent = radarHudBlipBasePosition.transform;
+                    radarBlipHud.transform.parent = radarHudBlipParent.transform;
                     EnemyBlip = radarBundle.LoadAsset<Sprite>("EnemyBlip");
                     EnemyBlipUp = radarBundle.LoadAsset<Sprite>("EnemyBlipUp");
                     EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
@@ -294,9 +306,9 @@ namespace Radar
                         blipImage.sprite = EnemyBlipDown;
                     }
 
-
                     switch (enemyPlayer.Profile.Info.Settings.Role) {
                         case WildSpawnType.pmcBot:
+                        case WildSpawnType.exUsec:
                             blipImage.color = Color.yellow;
                             break;
                         case WildSpawnType.assault:
