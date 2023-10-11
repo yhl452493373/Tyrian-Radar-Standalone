@@ -28,10 +28,6 @@
 		<Reference Include="UnityEngine">
 			<HintPath>dependencies\UnityEngine.dll</HintPath>
 		</Reference>
-		<Reference Include="UnityEngine">
-			<HintPath>dependencies\UnityEngine.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="UnityEngine.AnimationModule">
 			<HintPath>dependencies\UnityEngine.AnimationModule.dll</HintPath>
 			<Private>False</Private>
@@ -71,9 +67,6 @@
 		<Reference Include="UnityEngine.UIModule">
 			<HintPath>dependencies\UnityEngine.UIModule.dll</HintPath>
 			<Private>False</Private>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>dependencies\Newtonsoft.Json.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>

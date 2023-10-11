@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace Radar
 {
-    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.0")]
+    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.3")]
     public class Radar : BaseUnityPlugin
     {
         private static GameWorld gameWorld;
@@ -29,6 +29,7 @@ namespace Radar
         public static ConfigEntry<float> radarOffsetYConfig;
         public static ConfigEntry<float> radarOffsetXConfig;
         public static ConfigEntry<float> radarRangeConfig;
+        public static ConfigEntry<float> radarScanInterval;
         public static ManualLogSource logger;
         public static float playerHeight = 0f;
 
@@ -58,6 +59,7 @@ namespace Radar
             radarOffsetYConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Y Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The Y Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD X Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The X Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
             radarRangeConfig = Config.Bind<float>("B - Radar Settings", "Radar Range", 128f, new BepInEx.Configuration.ConfigDescription("The range within which enemies are displayed on the radar.", new BepInEx.Configuration.AcceptableValueRange<float>(32f, 512f)));
+            radarScanInterval = Config.Bind<float>("B - Radar Settings", "Radar Scan Interval", 50f, new BepInEx.Configuration.ConfigDescription("The interval between two scans.", new BepInEx.Configuration.AcceptableValueRange<float>(0f,500f)));
         }
 
         private void Update()
@@ -117,6 +119,9 @@ namespace Radar
         public BifacialTransform playerTransform; // Player's transform component
 
         public float radarRange = 128; // The range within which enemies are displayed on the radar
+
+        public float radarIntervalCount = 0;
+        public List<Player> activePlayerOnRadar;
 
         private void Start()
         {
@@ -192,7 +197,6 @@ namespace Radar
 
                     radarRange = Radar.radarRangeConfig.Value;
                     UpdateEnemyObjects();
-                    
                     if (radarHud != null)
                     {
                         radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
@@ -241,21 +245,48 @@ namespace Radar
                 yield return new WaitForSeconds(pauseDuration);
             }
         }
+
+        private void UpdateActivePlayerOnRadar()
+        {
+            if (radarIntervalCount > 0)
+            {
+                radarIntervalCount--;
+                return;
+            }
+            else
+            {
+                radarIntervalCount = Radar.radarScanInterval.Value;
+            }
+            activePlayerOnRadar = new List<Player>();
+            // Get the current players in gameWorld.AllAlivePlayersList and convert to a list
+            List<Player> players = gameWorld.AllAlivePlayersList.ToList();
+            // Exclude gameWorld.MainPlayer from the players list
+            players.Remove(gameWorld.MainPlayer);
+            foreach (Player enemyPlayer in players)
+            {
+                // Calculate the relative position of the enemy object
+                Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
+                // Check if the enemy is within the radar range and make sure it's alive
+                if (relativePosition.magnitude <= radarRange && enemyPlayer.HealthController.IsAlive)
+                {
+                    // Update blips on the radar for the enemies.
+                    activePlayerOnRadar.Add(enemyPlayer);
+                }
+            }
+        }
+
         private void UpdateEnemyObjects()
         {
             // Get the current players in gameWorld.AllAlivePlayersList and convert to a list
             List<Player> players = gameWorld.AllAlivePlayersList.ToList();
-
             // Exclude gameWorld.MainPlayer from the players list
             players.Remove(gameWorld.MainPlayer);
-
             List<Player> activeEnemyInRange = new List<Player>();
             List<Player> activeEnemyOutRange = new List<Player>();
             foreach (Player enemyPlayer in players)
             {
                 // Calculate the relative position of the enemy object
                 Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
-
                 // Check if the enemy is within the radar range and make sure it's alive
                 if (relativePosition.magnitude <= radarRange && enemyPlayer.HealthController.IsAlive)
                 {
