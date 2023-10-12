@@ -353,6 +353,7 @@ namespace Radar
                             {
                                 case WildSpawnType.assault:
                                 case WildSpawnType.marksman:
+                                case WildSpawnType.assaultGroup:
                                     blipImage.color = Color.green;
                                     break;
                                 default:
