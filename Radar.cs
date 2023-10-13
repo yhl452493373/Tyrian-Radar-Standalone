@@ -245,7 +245,7 @@ namespace Radar
                 while (t < 1f)
                 {
                     t += Time.deltaTime / animationDuration;
-                    float scale = Mathf.Lerp(0f, 1f, Mathf.Sqrt(1 - Mathf.Pow(1 - t, 4f)));
+                    float scale = Mathf.Lerp(0f, 1f, Mathf.Sqrt(1 - Mathf.Pow(1 - t, 4f))) * 0.712037f;
 
                     // Apply the scale to all axes
                     radarHudPulse.localScale = new Vector3(scale, scale, scale);
@@ -372,7 +372,8 @@ namespace Radar
                     float a = 1;
                     if (Radar.radarScanInterval.Value > 0)
                     {
-                        a = 1 - (Time.time - radarLastUpdateTime) / Radar.radarScanInterval.Value;
+                        float ratio = (Time.time - radarLastUpdateTime) / Radar.radarScanInterval.Value;
+                        a = 1 - ratio * ratio;
                     }
                     blipImage.color = new Color(r, g, b, a);
 
