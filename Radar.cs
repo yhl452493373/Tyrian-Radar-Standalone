@@ -27,11 +27,11 @@ namespace Radar
         const string colorSettings = "Color Settings";
         const string radarSettings = "Radar Settings";
 
-        public static ConfigEntry<bool> radarEnabledConfig;
-        public static ConfigEntry<bool> radarEnablePulse;
+        public static ConfigEntry<bool> radarEnableConfig;
+        public static ConfigEntry<bool> radarEnablePulseConfig;
 
-        public static ConfigEntry<float> radarScaleOffsetConfig;
-        public static ConfigEntry<float> radarDistanceScaleOffsetConfig;
+        public static ConfigEntry<float> radarSizeConfig;
+        public static ConfigEntry<float> radarDistanceScaleConfig;
         public static ConfigEntry<float> radarHeightThresholdeScaleOffsetConfig;
         public static ConfigEntry<float> radarOffsetYConfig;
         public static ConfigEntry<float> radarOffsetXConfig;
@@ -66,11 +66,11 @@ namespace Radar
             DontDestroyOnLoad(gameObject);
 
             // Add a custom configuration option for the Apply button
-            radarEnabledConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
-            radarEnablePulse = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
+            radarEnableConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
+            radarEnablePulseConfig = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
 
-            radarScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Scale Offset", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
-            radarDistanceScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
+            radarSizeConfig = Config.Bind<float>(radarSettings, "Radar HUD Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
+            radarDistanceScaleConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0.7f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
             radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Height Threshold Offset", 1f, new ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new AcceptableValueRange<float>(1f, 4f)));
             radarOffsetYConfig = Config.Bind<float>(radarSettings, "Radar HUD Y Position Offset", 0f, new ConfigDescription("The Y Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>(radarSettings, "Radar HUD X Position Offset", 0f, new ConfigDescription("The X Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
@@ -96,12 +96,12 @@ namespace Radar
             GameObject gamePlayerObject = player.gameObject;
             HaloRadar haloRadar = gamePlayerObject.GetComponent<HaloRadar>();
 
-            if (radarEnabledConfig.Value && haloRadar == null)
+            if (radarEnableConfig.Value && haloRadar == null)
             {
                 // Add the HaloRadar component if it doesn't exist.
                 gamePlayerObject.AddComponent<HaloRadar>();
             }
-            else if (!radarEnabledConfig.Value && haloRadar != null)
+            else if (!radarEnableConfig.Value && haloRadar != null)
             {
                 // Remove the HaloRadar component if it exists.
                 haloRadar.Destory();
@@ -208,18 +208,21 @@ namespace Radar
                         radarPositionYStart = radarHudBasePosition.position.y;
                         radarPositionXStart = radarHudBasePosition.position.x;
                         radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
-                        radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
+                        radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarSizeConfig.Value, radarScaleStart.x * Radar.radarSizeConfig.Value);
 
                         radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
                         radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
                         radarHud.transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
 
                         radarHud.SetActive(true);
-                        StartPulseAnimation();
+                        if (Radar.radarEnablePulseConfig.Value)
+                        {
+                            StartPulseAnimation();
+                        }
                     }
 
                     radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
-                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
+                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarSizeConfig.Value, radarScaleStart.x * Radar.radarSizeConfig.Value);
 
                     radarRange = Radar.radarRangeConfig.Value;
                     //UpdateEnemyObjects();
@@ -406,7 +409,7 @@ namespace Radar
                     // Calculate the position based on the angle and distance
                     float distance = Mathf.Sqrt(x * x + z * z);
                     // Calculate the offset factor based on the distance
-                    float offsetRadius = Mathf.Pow(distance / radarRange, 0.4f + Radar.radarDistanceScaleOffsetConfig.Value * Radar.radarDistanceScaleOffsetConfig.Value / 2.0f);
+                    float offsetRadius = Mathf.Pow(distance / radarRange, 0.4f + Radar.radarDistanceScaleConfig.Value * Radar.radarDistanceScaleConfig.Value / 2.0f);
                     // Calculate angle
                     // Apply the rotation of the parent transform
                     Vector3 rotatedDirection = radarHudBlipBasePosition.rotation * Vector3.forward;
