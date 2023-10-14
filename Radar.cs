@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 
 namespace Radar
 {
-    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.3")]
+    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.4")]
     public class Radar : BaseUnityPlugin
     {
         private static GameWorld gameWorld;
@@ -219,6 +219,10 @@ namespace Radar
                         {
                             StartPulseAnimation();
                         }
+                        else if (pulseCoroutine!= null)
+                        {
+                            StopCoroutine(pulseCoroutine);
+                        }
                     }
 
                     radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
@@ -386,6 +390,7 @@ namespace Radar
                                     blipImage.color = Radar.scavBlipColor.Value;
                                     break;
                                 default:
+                                    Debug.LogErrorFormat("LEONA: {}", enemyPlayer.Profile.Info.Settings.Role);
                                     blipImage.color = Radar.bossBlipColor.Value;
                                     break;
                             }
