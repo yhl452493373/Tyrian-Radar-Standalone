@@ -22,7 +22,14 @@ namespace Radar
         public static Player player;
         public static Radar instance;
         public static Dictionary<GameObject, HashSet<Material>> objectsMaterials = new Dictionary<GameObject, HashSet<Material>>();
+
+        const string baseSettings = "Base Settings";
+        const string colorSettings = "Color Settings";
+        const string radarSettings = "Radar Settings";
+
         public static ConfigEntry<bool> radarEnabledConfig;
+        public static ConfigEntry<bool> radarEnablePulse;
+
         public static ConfigEntry<float> radarScaleOffsetConfig;
         public static ConfigEntry<float> radarDistanceScaleOffsetConfig;
         public static ConfigEntry<float> radarHeightThresholdeScaleOffsetConfig;
@@ -30,6 +37,13 @@ namespace Radar
         public static ConfigEntry<float> radarOffsetXConfig;
         public static ConfigEntry<float> radarRangeConfig;
         public static ConfigEntry<float> radarScanInterval;
+
+        public static ConfigEntry<Color> bossBlipColor;
+        public static ConfigEntry<Color> pmcBlipColor;
+        public static ConfigEntry<Color> scavBlipColor;
+        public static ConfigEntry<Color> backgroundColor;
+
+
         public static ManualLogSource logger;
         public static float playerHeight = 0f;
 
@@ -52,14 +66,21 @@ namespace Radar
             DontDestroyOnLoad(gameObject);
 
             // Add a custom configuration option for the Apply button
-            radarEnabledConfig = Config.Bind("B - Radar Settings", "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
-            radarScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Scale Offset", 1f, new BepInEx.Configuration.ConfigDescription("The Scale Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(0.0f, 1f)));
-            radarDistanceScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Disntance Scale Offset", 0f, new BepInEx.Configuration.ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new BepInEx.Configuration.AcceptableValueRange<float>(0.1f, 2f)));
-            radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Blip Height Threshold Offset", 1f, new BepInEx.Configuration.ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new BepInEx.Configuration.AcceptableValueRange<float>(1f, 4f)));
-            radarOffsetYConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD Y Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The Y Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
-            radarOffsetXConfig = Config.Bind<float>("B - Radar Settings", "Radar HUD X Position Offset", 0f, new BepInEx.Configuration.ConfigDescription("The X Position Offset for the Radar Hud.", new BepInEx.Configuration.AcceptableValueRange<float>(-2000f, 2000f)));
-            radarRangeConfig = Config.Bind<float>("B - Radar Settings", "Radar Range", 128f, new BepInEx.Configuration.ConfigDescription("The range within which enemies are displayed on the radar.", new BepInEx.Configuration.AcceptableValueRange<float>(32f, 512f)));
-            radarScanInterval = Config.Bind<float>("B - Radar Settings", "Radar Scan Interval", 1f, new BepInEx.Configuration.ConfigDescription("The interval between two scans.", new BepInEx.Configuration.AcceptableValueRange<float>(0f,30f)));
+            radarEnabledConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
+            radarEnablePulse = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
+
+            radarScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Scale Offset", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
+            radarDistanceScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
+            radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Height Threshold Offset", 1f, new ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new AcceptableValueRange<float>(1f, 4f)));
+            radarOffsetYConfig = Config.Bind<float>(radarSettings, "Radar HUD Y Position Offset", 0f, new ConfigDescription("The Y Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
+            radarOffsetXConfig = Config.Bind<float>(radarSettings, "Radar HUD X Position Offset", 0f, new ConfigDescription("The X Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
+            radarRangeConfig = Config.Bind<float>(radarSettings, "Radar Range", 128f, new ConfigDescription("The range within which enemies are displayed on the radar.", new AcceptableValueRange<float>(32f, 512f)));
+            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0f,30f)));
+            
+            bossBlipColor = Config.Bind<Color>(colorSettings, "Boss Blip Color", new Color(1f, 0f, 0f));
+            scavBlipColor = Config.Bind<Color>(colorSettings, "Scav Blip Color", new Color(0f, 1f, 0f));
+            pmcBlipColor = Config.Bind<Color>(colorSettings, "PMC Blip Color", new Color(1f, 1f, 0f));
+            backgroundColor = Config.Bind<Color>(colorSettings, "Background Color", new Color(0f, 0.7f, 0.85f));
         }
 
         private void Update()
@@ -144,7 +165,6 @@ namespace Radar
                 EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
             }
         }
-
         private void Update()
         {
             if (MapLoaded())
@@ -189,6 +209,11 @@ namespace Radar
                         radarPositionXStart = radarHudBasePosition.position.x;
                         radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
                         radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarScaleOffsetConfig.Value, radarScaleStart.x * Radar.radarScaleOffsetConfig.Value);
+
+                        radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
+                        radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
+                        radarHud.transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
+
                         radarHud.SetActive(true);
                         StartPulseAnimation();
                     }
@@ -346,6 +371,7 @@ namespace Radar
                         blipImage.sprite = EnemyBlipDown;
                     }
 
+                    // set blip color
                     switch (enemyPlayer.Profile.Info.Side)
                     {
                         case EPlayerSide.Savage:
@@ -354,16 +380,16 @@ namespace Radar
                                 case WildSpawnType.assault:
                                 case WildSpawnType.marksman:
                                 case WildSpawnType.assaultGroup:
-                                    blipImage.color = Color.green;
+                                    blipImage.color = Radar.scavBlipColor.Value;
                                     break;
                                 default:
-                                    blipImage.color = Color.red;
+                                    blipImage.color = Radar.bossBlipColor.Value;
                                     break;
                             }
                             break;
                         case EPlayerSide.Bear:
                         case EPlayerSide.Usec:
-                            blipImage.color = Color.yellow;
+                            blipImage.color = Radar.pmcBlipColor.Value;
                             break;
                         default:
                             break;
