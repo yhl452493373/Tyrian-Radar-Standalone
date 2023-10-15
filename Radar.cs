@@ -1,7 +1,8 @@
-﻿using EFT;
+﻿#define DEBUGGINGS
+
+using EFT;
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Comfort.Common;
@@ -29,6 +30,7 @@ namespace Radar
 
         public static ConfigEntry<bool> radarEnableConfig;
         public static ConfigEntry<bool> radarEnablePulseConfig;
+        public static ConfigEntry<bool> radarEnableCorpseConfig;
 
         public static ConfigEntry<float> radarSizeConfig;
         public static ConfigEntry<float> radarDistanceScaleConfig;
@@ -68,6 +70,7 @@ namespace Radar
             // Add a custom configuration option for the Apply button
             radarEnableConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
             radarEnablePulseConfig = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
+            radarEnableCorpseConfig = Config.Bind(baseSettings, "Radar Corpse Detection Enabled", true, "Adds detection for corpse.");
 
             radarSizeConfig = Config.Bind<float>(radarSettings, "Radar HUD Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
             radarDistanceScaleConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0.7f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
@@ -130,6 +133,7 @@ namespace Radar
         public static Sprite EnemyBlip;
         public static Sprite EnemyBlipDown;
         public static Sprite EnemyBlipUp;
+        public static Sprite EnemyBlipDead;
         public static Coroutine pulseCoroutine;
         public static float animationDuration = 1f;
         public static float pauseDuration = 4f;
@@ -143,7 +147,8 @@ namespace Radar
 
         public float radarLastUpdateTime = 0;
         public float radarInterval = 0;
-        public List<Player> activePlayerOnRadar;
+        public List<Player> activePlayerOnRadar = new List<Player>();
+        public List<Player> deadPlayerOnRadar = new List<Player>();
 
         private void Start()
         {
@@ -163,6 +168,7 @@ namespace Radar
                 EnemyBlip = radarBundle.LoadAsset<Sprite>("EnemyBlip");
                 EnemyBlipUp = radarBundle.LoadAsset<Sprite>("EnemyBlipUp");
                 EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
+                EnemyBlipDead = radarBundle.LoadAsset<Sprite>("EnemyBlipDead");
             }
         }
         private void Update()
@@ -229,8 +235,9 @@ namespace Radar
                     radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarSizeConfig.Value, radarScaleStart.x * Radar.radarSizeConfig.Value);
 
                     radarRange = Radar.radarRangeConfig.Value;
-                    //UpdateEnemyObjects();
+
                     UpdateRadar(UpdateActivePlayerOnRadar());
+
                     if (radarHud != null)
                     {
                         radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
@@ -239,7 +246,10 @@ namespace Radar
                     if (radarInterval != Radar.radarScanInterval.Value)
                     {
                         radarInterval = Radar.radarScanInterval.Value;
-                        StartPulseAnimation();
+                        if (Radar.radarEnablePulseConfig.Value)
+                        {
+                            StartPulseAnimation();
+                        }
                     }
                 }
             }
@@ -303,22 +313,42 @@ namespace Radar
             {
                 radarLastUpdateTime = Time.time;
             }
-            activePlayerOnRadar = new List<Player>();
-            // Get the current players in gameWorld.AllAlivePlayersList and convert to a list
-            List<Player> players = gameWorld.AllAlivePlayersList.ToList();
-            // Exclude gameWorld.MainPlayer from the players list
-            players.Remove(gameWorld.MainPlayer);
-            foreach (Player enemyPlayer in players)
+
+            activePlayerOnRadar.Clear();
+            deadPlayerOnRadar.Clear();
+            IEnumerable<Player> allPlayers = gameWorld.AllPlayersEverExisted;
+
+            foreach(Player player in allPlayers)
             {
-                // Calculate the relative position of the enemy object
-                Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
-                // Check if the enemy is within the radar range and make sure it's alive
-                if (relativePosition.magnitude <= radarRange && enemyPlayer.HealthController.IsAlive)
+                if (player == gameWorld.MainPlayer)
                 {
-                    // Update blips on the radar for the enemies.
-                    activePlayerOnRadar.Add(enemyPlayer);
+                    continue;
+                }
+                Vector3 relativePosition = player.gameObject.transform.position - playerTransform.position;
+                if (relativePosition.magnitude <= radarRange)
+                {
+                    if (player.HealthController.IsAlive)
+                    {
+                        activePlayerOnRadar.Add(player);
+                    }
+                    else
+                    {
+                        deadPlayerOnRadar.Add(player);
+                    }
                 }
             }
+            //foreach (Player enemyPlayer in alivePlayers)
+            //{
+            //    Debug.LogErrorFormat("ID: {}, alive", player.Id);
+            //    // Calculate the relative position of the enemy object
+            //    Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
+            //    // Check if the enemy is within the radar range and make sure it's alive
+            //    if (relativePosition.magnitude <= radarRange && enemyPlayer.HealthController.IsAlive)
+            //    {
+            //        // Update blips on the radar for the enemies.
+            //        activePlayerOnRadar.Add(enemyPlayer);
+            //    }
+            //}
             foreach (var enemyBlip in enemyBlips)
             {
                 Destroy(enemyBlip.Value);
@@ -333,9 +363,17 @@ namespace Radar
             {
                 UpdateBlips(enemyPlayer, positionUpdate);
             }
+
+            if (Radar.radarEnableCorpseConfig.Value)
+            {
+                foreach (Player enemyPlayer in deadPlayerOnRadar)
+                {
+                    UpdateBlips(enemyPlayer, positionUpdate, true);
+                }
+            }
         }
 
-        private void UpdateBlips(Player enemyPlayer, bool positionUpdate)
+        private void UpdateBlips(Player enemyPlayer, bool positionUpdate, bool isDead = false)
         {
             if (enemyPlayer == null)
                 return;
@@ -367,7 +405,11 @@ namespace Radar
                     blipImage = radarHudBlip.GetComponent<Image>();
                     float yDifference = enemyObject.transform.position.y - player.Transform.position.y;
                     float totalThreshold = (Radar.playerHeight + Radar.playerHeight / 2f) * Radar.radarHeightThresholdeScaleOffsetConfig.Value;
-                    if (Mathf.Abs(yDifference) <= totalThreshold)
+
+                    if (isDead)
+                    {
+                        blipImage.sprite = EnemyBlipDead;
+                    } else if (Mathf.Abs(yDifference) <= totalThreshold)
                     {
                         blipImage.sprite = EnemyBlip;
                     } else if (yDifference > totalThreshold)
@@ -390,7 +432,9 @@ namespace Radar
                                     blipImage.color = Radar.scavBlipColor.Value;
                                     break;
                                 default:
-                                    Debug.LogErrorFormat("LEONA: {}", enemyPlayer.Profile.Info.Settings.Role);
+#if DEBUGGING
+                                    Debug.LogErrorFormat("LEONA: Red blip for {}", enemyPlayer.Profile.Info.Settings.Role);
+#endif
                                     blipImage.color = Radar.bossBlipColor.Value;
                                     break;
                             }
