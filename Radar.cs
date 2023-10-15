@@ -78,7 +78,7 @@ namespace Radar
             radarOffsetYConfig = Config.Bind<float>(radarSettings, "Radar HUD Y Position Offset", 0f, new ConfigDescription("The Y Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>(radarSettings, "Radar HUD X Position Offset", 0f, new ConfigDescription("The X Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
             radarRangeConfig = Config.Bind<float>(radarSettings, "Radar Range", 128f, new ConfigDescription("The range within which enemies are displayed on the radar.", new AcceptableValueRange<float>(32f, 512f)));
-            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0f,30f)));
+            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0f, 30f)));
             
             bossBlipColor = Config.Bind<Color>(colorSettings, "Boss Blip Color", new Color(1f, 0f, 0f));
             scavBlipColor = Config.Bind<Color>(colorSettings, "Scav Blip Color", new Color(0f, 1f, 0f));
@@ -146,7 +146,7 @@ namespace Radar
         public float radarRange = 128; // The range within which enemies are displayed on the radar
 
         public float radarLastUpdateTime = 0;
-        public float radarInterval = 0;
+        public float radarInterval = -1;
         public List<Player> activePlayerOnRadar = new List<Player>();
         public List<Player> deadPlayerOnRadar = new List<Player>();
 
@@ -221,14 +221,6 @@ namespace Radar
                         radarHud.transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
 
                         radarHud.SetActive(true);
-                        if (Radar.radarEnablePulseConfig.Value)
-                        {
-                            StartPulseAnimation();
-                        }
-                        else if (pulseCoroutine!= null)
-                        {
-                            StopCoroutine(pulseCoroutine);
-                        }
                     }
 
                     radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
@@ -287,17 +279,14 @@ namespace Radar
                 while (t < 1f)
                 {
                     t += Time.deltaTime / animationDuration;
-                    float scale = Mathf.Lerp(0f, 1f, Mathf.Sqrt(1 - Mathf.Pow(1 - t, 4f))) * 0.712037f;
+                    float angle = Mathf.Lerp(0f, 1f, 1 - t) * 360;
 
                     // Apply the scale to all axes
-                    radarHudPulse.localScale = new Vector3(scale, scale, scale);
-                    Image img = radarHudPulse.GetComponent<Image>();
-                    img.color = new Color(img.color.r, img.color.g, img.color.b, 1 - t);
-
+                    radarHudPulse.localEulerAngles = new Vector3(0, 0, angle);
                     yield return null;
                 }
                 // Reset the scale to 0
-                radarHudPulse.localScale = Vector3.zero;
+                radarHudPulse.localEulerAngles = Vector3.zero;
                 // Pause for the specified duration
                 yield return new WaitForSeconds(interval);
             }
