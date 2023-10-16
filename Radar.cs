@@ -124,7 +124,7 @@ namespace Radar
         public static GameObject radarBlipHud;
         public static GameObject playerCamera;
 
-        private Dictionary<Player, GameObject> enemyBlips;
+        private Dictionary<Player, GameObject> enemyBlips = new Dictionary<Player, GameObject>();
         public static RectTransform radarHudBlipBasePosition { get; private set; }
         public static RectTransform radarHudBasePosition { get; private set; }
         public static RectTransform radarHudPulse { get; private set; }
@@ -141,7 +141,6 @@ namespace Radar
         public static float radarPositionYStart = 0f;
         public static float radarPositionXStart = 0f;
         public static bool MapLoaded() => Singleton<GameWorld>.Instantiated;
-        public BifacialTransform playerTransform; // Player's transform component
 
         public float radarRange = 128; // The range within which enemies are displayed on the radar
 
@@ -152,7 +151,6 @@ namespace Radar
 
         private void Start()
         {
-            enemyBlips = new Dictionary<Player, GameObject>();
             // Create our prefabs from our bundles.
             if (RadarhudPrefab == null)
             {
@@ -179,7 +177,6 @@ namespace Radar
                 if (gameWorld.MainPlayer != null)
                 {
                     player = gameWorld.MainPlayer;
-                    playerTransform = player.Transform;
                     Renderer[] renderers = player.GetComponentsInChildren<Renderer>();
                     float minBoundsY = float.MaxValue;
                     float maxBoundsY = float.MinValue;
@@ -192,6 +189,11 @@ namespace Radar
                             maxBoundsY = bounds.max.y;
                     }
                     Radar.playerHeight = maxBoundsY - minBoundsY;
+                }
+                else
+                {
+                    // no main player
+                    return;
                 }
 
                 if (playerCamera == null)
@@ -305,42 +307,37 @@ namespace Radar
 
             activePlayerOnRadar.Clear();
             deadPlayerOnRadar.Clear();
+            if (gameWorld == null)
+            {
+                return false;
+            }
             IEnumerable<Player> allPlayers = gameWorld.AllPlayersEverExisted;
 
-            foreach(Player player in allPlayers)
+            foreach(Player enemyPlayer in allPlayers)
             {
-                if (player == gameWorld.MainPlayer)
+                if (enemyPlayer == player)
                 {
                     continue;
                 }
-                Vector3 relativePosition = player.gameObject.transform.position - playerTransform.position;
+                Vector3 relativePosition = enemyPlayer.gameObject.transform.position - player.Transform.position;
                 if (relativePosition.magnitude <= radarRange)
                 {
-                    if (player.HealthController.IsAlive)
+                    if (enemyPlayer.HealthController.IsAlive)
                     {
-                        activePlayerOnRadar.Add(player);
+                        activePlayerOnRadar.Add(enemyPlayer);
                     }
                     else
                     {
-                        deadPlayerOnRadar.Add(player);
+                        deadPlayerOnRadar.Add(enemyPlayer);
                     }
                 }
             }
-            //foreach (Player enemyPlayer in alivePlayers)
-            //{
-            //    Debug.LogErrorFormat("ID: {}, alive", player.Id);
-            //    // Calculate the relative position of the enemy object
-            //    Vector3 relativePosition = enemyPlayer.gameObject.transform.position - playerTransform.position;
-            //    // Check if the enemy is within the radar range and make sure it's alive
-            //    if (relativePosition.magnitude <= radarRange && enemyPlayer.HealthController.IsAlive)
-            //    {
-            //        // Update blips on the radar for the enemies.
-            //        activePlayerOnRadar.Add(enemyPlayer);
-            //    }
-            //}
             foreach (var enemyBlip in enemyBlips)
             {
-                Destroy(enemyBlip.Value);
+                if (enemyBlip.Value != null)
+                {
+                    Destroy(enemyBlip.Value);
+                }
             }
             enemyBlips.Clear();
             return true;
@@ -348,17 +345,18 @@ namespace Radar
 
         private void UpdateRadar(bool positionUpdate)
         {
-            foreach (Player enemyPlayer in activePlayerOnRadar)
-            {
-                UpdateBlips(enemyPlayer, positionUpdate);
-            }
-
+            // plot corpse first
             if (Radar.radarEnableCorpseConfig.Value)
             {
                 foreach (Player enemyPlayer in deadPlayerOnRadar)
                 {
                     UpdateBlips(enemyPlayer, positionUpdate, true);
                 }
+            }
+            // then alive players
+            foreach (Player enemyPlayer in activePlayerOnRadar)
+            {
+                UpdateBlips(enemyPlayer, positionUpdate);
             }
         }
 
