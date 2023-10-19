@@ -39,8 +39,10 @@ namespace Radar
         public static ConfigEntry<float> radarScanInterval;
 
         public static ConfigEntry<Color> bossBlipColor;
-        public static ConfigEntry<Color> pmcBlipColor;
+        public static ConfigEntry<Color> usecBlipColor;
+        public static ConfigEntry<Color> bearBlipColor;
         public static ConfigEntry<Color> scavBlipColor;
+        public static ConfigEntry<Color> corpseBlipColor;
         public static ConfigEntry<Color> backgroundColor;
 
 
@@ -80,7 +82,9 @@ namespace Radar
             
             bossBlipColor = Config.Bind<Color>(colorSettings, "Boss Blip Color", new Color(1f, 0f, 0f));
             scavBlipColor = Config.Bind<Color>(colorSettings, "Scav Blip Color", new Color(0f, 1f, 0f));
-            pmcBlipColor = Config.Bind<Color>(colorSettings, "PMC Blip Color", new Color(1f, 1f, 0f));
+            usecBlipColor = Config.Bind<Color>(colorSettings, "Usec PMC Blip Color", new Color(1f, 1f, 0f));
+            bearBlipColor = Config.Bind<Color>(colorSettings, "Bear PMC Blip Color", new Color(1f, 0.5f, 0f));
+            corpseBlipColor = Config.Bind<Color>(colorSettings, "Corpse Blip Color", new Color(0.5f, 0.5f, 0.5f));
             backgroundColor = Config.Bind<Color>(colorSettings, "Background Color", new Color(0f, 0.7f, 0.85f));
         }
 
@@ -413,16 +417,15 @@ namespace Radar
                                     blipImage.color = Radar.scavBlipColor.Value;
                                     break;
                                 default:
-#if DEBUGGING
-                                    Debug.LogErrorFormat("LEONA: Red blip for {}", enemyPlayer.Profile.Info.Settings.Role);
-#endif
                                     blipImage.color = Radar.bossBlipColor.Value;
                                     break;
                             }
                             break;
                         case EPlayerSide.Bear:
+                            blipImage.color = Radar.bearBlipColor.Value;
+                            break;
                         case EPlayerSide.Usec:
-                            blipImage.color = Radar.pmcBlipColor.Value;
+                            blipImage.color = Radar.usecBlipColor.Value;
                             break;
                         default:
                             break;
