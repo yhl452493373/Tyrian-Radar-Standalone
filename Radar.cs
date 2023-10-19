@@ -29,6 +29,8 @@ namespace Radar
         public static ConfigEntry<bool> radarEnableConfig;
         public static ConfigEntry<bool> radarEnablePulseConfig;
         public static ConfigEntry<bool> radarEnableCorpseConfig;
+        public static ConfigEntry<KeyboardShortcut> radarEnableShortCutConfig;
+        public static bool isShortcutDown = false;
 
         public static ConfigEntry<float> radarSizeConfig;
         public static ConfigEntry<float> radarDistanceScaleConfig;
@@ -71,6 +73,7 @@ namespace Radar
             radarEnableConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
             radarEnablePulseConfig = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
             radarEnableCorpseConfig = Config.Bind(baseSettings, "Radar Corpse Detection Enabled", true, "Adds detection for corpse.");
+            radarEnableShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable radar", new KeyboardShortcut(KeyCode.F10));
 
             radarSizeConfig = Config.Bind<float>(radarSettings, "Radar HUD Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
             radarDistanceScaleConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0.7f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
@@ -100,6 +103,17 @@ namespace Radar
 
             GameObject gamePlayerObject = player.gameObject;
             HaloRadar haloRadar = gamePlayerObject.GetComponent<HaloRadar>();
+
+            if (!isShortcutDown && radarEnableShortCutConfig.Value.IsDown())
+            {
+                radarEnableConfig.Value = !radarEnableConfig.Value;
+                isShortcutDown = true;
+            }
+
+            if (!radarEnableShortCutConfig.Value.IsDown())
+            {
+                isShortcutDown = false;
+            }
 
             if (radarEnableConfig.Value && haloRadar == null)
             {
@@ -394,42 +408,50 @@ namespace Radar
                     if (isDead)
                     {
                         blipImage.sprite = EnemyBlipDead;
-                    } else if (Mathf.Abs(yDifference) <= totalThreshold)
-                    {
-                        blipImage.sprite = EnemyBlip;
-                    } else if (yDifference > totalThreshold)
-                    {
-                        blipImage.sprite = EnemyBlipUp;
-                    } else if (yDifference < -totalThreshold)
-                    {
-                        blipImage.sprite = EnemyBlipDown;
+                        blipImage.color = Radar.corpseBlipColor.Value;
                     }
+                    else
+                    {
+                        if (Mathf.Abs(yDifference) <= totalThreshold)
+                        {
+                            blipImage.sprite = EnemyBlip;
+                        }
+                        else if (yDifference > totalThreshold)
+                        {
+                            blipImage.sprite = EnemyBlipUp;
+                        }
+                        else if (yDifference < -totalThreshold)
+                        {
+                            blipImage.sprite = EnemyBlipDown;
+                        }
 
-                    // set blip color
-                    switch (enemyPlayer.Profile.Info.Side)
-                    {
-                        case EPlayerSide.Savage:
-                            switch (enemyPlayer.Profile.Info.Settings.Role)
-                            {
-                                case WildSpawnType.assault:
-                                case WildSpawnType.marksman:
-                                case WildSpawnType.assaultGroup:
-                                    blipImage.color = Radar.scavBlipColor.Value;
-                                    break;
-                                default:
-                                    blipImage.color = Radar.bossBlipColor.Value;
-                                    break;
-                            }
-                            break;
-                        case EPlayerSide.Bear:
-                            blipImage.color = Radar.bearBlipColor.Value;
-                            break;
-                        case EPlayerSide.Usec:
-                            blipImage.color = Radar.usecBlipColor.Value;
-                            break;
-                        default:
-                            break;
+                        // set blip color
+                        switch (enemyPlayer.Profile.Info.Side)
+                        {
+                            case EPlayerSide.Savage:
+                                switch (enemyPlayer.Profile.Info.Settings.Role)
+                                {
+                                    case WildSpawnType.assault:
+                                    case WildSpawnType.marksman:
+                                    case WildSpawnType.assaultGroup:
+                                        blipImage.color = Radar.scavBlipColor.Value;
+                                        break;
+                                    default:
+                                        blipImage.color = Radar.bossBlipColor.Value;
+                                        break;
+                                }
+                                break;
+                            case EPlayerSide.Bear:
+                                blipImage.color = Radar.bearBlipColor.Value;
+                                break;
+                            case EPlayerSide.Usec:
+                                blipImage.color = Radar.usecBlipColor.Value;
+                                break;
+                            default:
+                                break;
+                        }
                     }
+                    
                     float r = blipImage.color.r, g = blipImage.color.g, b = blipImage.color.b;
                     float a = 1;
                     if (Radar.radarScanInterval.Value > 0)
