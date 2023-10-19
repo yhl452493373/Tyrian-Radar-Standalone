@@ -10,17 +10,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="Aki.Reflection">
-			<HintPath>dependencies\Aki.Reflection.dll</HintPath>
-		</Reference>
-		<Reference Include="0Harmony">
-			<HintPath>dependencies\0Harmony.dll</HintPath>
-		</Reference>
 		<Reference Include="Assembly-CSharp">
-			<HintPath>dependencies\Assembly-CSharp.dll</HintPath>
+			<HintPath>dependencies\3.7.0\Assembly-CSharp.dll</HintPath>
 		</Reference>
 		<Reference Include="BepInEx">
-			<HintPath>dependencies\BepInEx.dll</HintPath>
+			<HintPath>dependencies\3.7.0\BepInEx.dll</HintPath>
 		</Reference>
 		<Reference Include="Comfort">
 			<HintPath>dependencies\Comfort.dll</HintPath>
@@ -28,44 +22,16 @@
 		<Reference Include="UnityEngine">
 			<HintPath>dependencies\UnityEngine.dll</HintPath>
 		</Reference>
-		<Reference Include="UnityEngine.AnimationModule">
-			<HintPath>dependencies\UnityEngine.AnimationModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="UnityEngine.AssetBundleModule">
 			<HintPath>dependencies\UnityEngine.AssetBundleModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.AudioModule">
-			<HintPath>dependencies\UnityEngine.AudioModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<HintPath>dependencies\UnityEngine.CoreModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="UnityEngine.IMGUIModule">
-			<HintPath>dependencies\UnityEngine.IMGUIModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.InputLegacyModule">
-			<HintPath>dependencies\UnityEngine.InputLegacyModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.InputModule">
-			<HintPath>dependencies\UnityEngine.InputModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.PhysicsModule">
-			<HintPath>dependencies\UnityEngine.PhysicsModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="UnityEngine.UI">
 			<HintPath>dependencies\UnityEngine.UI.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.UIModule">
-			<HintPath>dependencies\UnityEngine.UIModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
