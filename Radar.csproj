@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
 		<AssemblyName>Tyrian-Radar</AssemblyName>
+		<DependencyVersion>3.7.0</DependencyVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -10,12 +11,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="Assembly-CSharp">
-			<HintPath>dependencies\3.7.0\Assembly-CSharp.dll</HintPath>
-		</Reference>
-		<Reference Include="BepInEx">
-			<HintPath>dependencies\3.7.0\BepInEx.dll</HintPath>
-		</Reference>
+		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll"/>
+		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll"/>
 		<Reference Include="Comfort">
 			<HintPath>dependencies\Comfort.dll</HintPath>
 		</Reference>
