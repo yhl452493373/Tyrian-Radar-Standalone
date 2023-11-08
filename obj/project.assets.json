@@ -8,19 +8,19 @@
     ".NETFramework,Version=v4.7.2": []
   },
   "packageFolders": {
-    "C:\\Users\\Leo\\.nuget\\packages\\": {}
+    "C:\\Users\\guojun\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Sundries\\GithubProject\\Tyrian-Radar-Standalone\\Radar.csproj",
+      "projectUniqueName": "D:\\Git\\Tyrian-Radar-Standalone\\Radar.csproj",
       "projectName": "Tyrian-Radar",
-      "projectPath": "D:\\Sundries\\GithubProject\\Tyrian-Radar-Standalone\\Radar.csproj",
-      "packagesPath": "C:\\Users\\Leo\\.nuget\\packages\\",
-      "outputPath": "D:\\Sundries\\GithubProject\\Tyrian-Radar-Standalone\\obj\\",
+      "projectPath": "D:\\Git\\Tyrian-Radar-Standalone\\Radar.csproj",
+      "packagesPath": "C:\\Users\\guojun\\.nuget\\packages\\",
+      "outputPath": "D:\\Git\\Tyrian-Radar-Standalone\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Leo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\guojun\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -45,7 +45,7 @@
     "frameworks": {
       "net472": {
         "targetAlias": "net472",
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.403\\RuntimeIdentifierGraph.json"
       }
     }
   }

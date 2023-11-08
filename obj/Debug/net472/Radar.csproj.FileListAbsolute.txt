@@ -189,3 +189,17 @@ E:\Development\Tyrian-Radar-Standalone\bin\Debug\net472\BepInEx.xml
 E:\Development\Tyrian-Radar-Standalone\bin\Debug\net472\MonoMod.Utils.xml
 E:\Development\Tyrian-Radar-Standalone\bin\Debug\net472\MonoMod.RuntimeDetour.xml
 E:\Development\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.csproj.CopyComplete
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\Tyrian-Radar.pdb
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\Assembly-CSharp.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\BepInEx.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\Comfort.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Debug\net472\UnityEngine.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.csproj.AssemblyReference.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.GeneratedMSBuildEditorConfig.editorconfig
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.AssemblyInfoInputs.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.AssemblyInfo.cs
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.csproj.CoreCompileInputs.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Radar.csproj.CopyComplete
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Debug\net472\Tyrian-Radar.pdb

@@ -79,3 +79,17 @@ D:\Sundries\GithubProject\Tyrian-Radar-Standalone\bin\Release\net472\UnityEngine
 D:\Sundries\GithubProject\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.CopyComplete
 D:\Sundries\GithubProject\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.dll
 D:\Sundries\GithubProject\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.pdb
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\Tyrian-Radar.pdb
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\Assembly-CSharp.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\BepInEx.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\Comfort.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\UnityEngine.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.AssemblyReference.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.GeneratedMSBuildEditorConfig.editorconfig
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.AssemblyInfoInputs.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.AssemblyInfo.cs
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.CoreCompileInputs.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.CopyComplete
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.pdb
