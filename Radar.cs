@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 
 namespace Radar
 {
-    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.7")]
+    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.8")]
     public class Radar : BaseUnityPlugin
     {
         private static GameWorld gameWorld;
