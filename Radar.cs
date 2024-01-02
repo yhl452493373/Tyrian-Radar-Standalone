@@ -10,6 +10,7 @@ using BepInEx.Logging;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using System.Diagnostics;
 
 namespace Radar
 {
@@ -49,7 +50,7 @@ namespace Radar
 
 
         public static ManualLogSource logger;
-        public static float playerHeight = 0f;
+        public static float playerHeight = 1.90f;
 
         public static Radar Instance
         {
@@ -81,7 +82,7 @@ namespace Radar
             radarOffsetYConfig = Config.Bind<float>(radarSettings, "Radar HUD Y Position Offset", 0f, new ConfigDescription("The Y Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
             radarOffsetXConfig = Config.Bind<float>(radarSettings, "Radar HUD X Position Offset", 0f, new ConfigDescription("The X Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-2000f, 2000f)));
             radarRangeConfig = Config.Bind<float>(radarSettings, "Radar Range", 128f, new ConfigDescription("The range within which enemies are displayed on the radar.", new AcceptableValueRange<float>(32f, 512f)));
-            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0f, 30f)));
+            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0.1f, 30f)));
             
             bossBlipColor = Config.Bind<Color>(colorSettings, "Boss Blip Color", new Color(1f, 0f, 0f));
             scavBlipColor = Config.Bind<Color>(colorSettings, "Scav Blip Color", new Color(0f, 1f, 0f));
@@ -196,19 +197,10 @@ namespace Radar
                     return;
                 }
 
-                player = gameWorld.MainPlayer;
-                Renderer[] renderers = player.GetComponentsInChildren<Renderer>();
-                float minBoundsY = float.MaxValue;
-                float maxBoundsY = float.MinValue;
-                foreach (Renderer renderer in renderers)
+                if (player == null)
                 {
-                    Bounds bounds = renderer.bounds;
-                    if (bounds.min.y < minBoundsY)
-                        minBoundsY = bounds.min.y;
-                    if (bounds.max.y > maxBoundsY)
-                        maxBoundsY = bounds.max.y;
+                    player = gameWorld.MainPlayer;
                 }
-                Radar.playerHeight = maxBoundsY - minBoundsY;
 
                 if (playerCamera == null)
                 {
@@ -310,6 +302,7 @@ namespace Radar
             {
                 return false;
             }
+
             if (Time.time - radarLastUpdateTime < Radar.radarScanInterval.Value)
             {
                 // clean blip if enemyPlayer has been cleared
@@ -327,17 +320,19 @@ namespace Radar
                 radarLastUpdateTime = Time.time;
             }
 
-            // clear blips
-            foreach (var enemyBlip in enemyBlips)
-            {
-                Destroy(enemyBlip.Value);
-            }
-            enemyBlips.Clear();
-
             activePlayerOnRadar.Clear();
             deadPlayerOnRadar.Clear();
-            
-            IEnumerable<Player> allPlayers = gameWorld.AllPlayersEverExisted;
+
+            IEnumerable<Player> allPlayers;
+            if (Radar.radarEnableCorpseConfig.Value)
+            {
+                allPlayers = gameWorld.AllPlayersEverExisted;
+            }
+            else
+            {
+                allPlayers = gameWorld.AllAlivePlayersList;
+            }
+
             foreach (Player enemyPlayer in allPlayers)
             {
                 if (enemyPlayer == null || enemyPlayer == player)
@@ -356,10 +351,33 @@ namespace Radar
                     {
                         deadPlayerOnRadar.Add(enemyPlayer);
                     }
-                    enemyBlips.Add(enemyPlayer, GetBlip());
+
+                    if (!enemyBlips.ContainsKey(enemyPlayer))
+                    {
+                        enemyBlips.Add(enemyPlayer, GetBlip());
+                    }
                 }
             }
-            
+
+            var playersToRemove = new List<Player>();
+            foreach (var blipKey in enemyBlips.Keys)
+            {
+                if (!activePlayerOnRadar.Contains(blipKey) && !deadPlayerOnRadar.Contains(blipKey))
+                {
+                    playersToRemove.Add(blipKey);
+                }
+            }
+
+            foreach (Player enemyPlayer in playersToRemove)
+            {
+                GameObject gameObject = enemyBlips[enemyPlayer];
+                if (gameObject != null)
+                {
+                    Destroy(gameObject);
+                }
+                enemyBlips.Remove(enemyPlayer);
+            }
+
             return true;
         }
 
@@ -455,7 +473,7 @@ namespace Radar
                     
                 float r = blipImage.color.r, g = blipImage.color.g, b = blipImage.color.b, a = blipImage.color.a;
                 float delta_a = 1;
-                if (Radar.radarScanInterval.Value > 0)
+                if (Radar.radarScanInterval.Value > 0.8)
                 {
                     float ratio = (Time.time - radarLastUpdateTime) / Radar.radarScanInterval.Value;
                     delta_a = 1 - ratio * ratio;
