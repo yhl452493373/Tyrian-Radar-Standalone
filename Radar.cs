@@ -31,7 +31,9 @@ namespace Radar
         public static ConfigEntry<bool> radarEnablePulseConfig;
         public static ConfigEntry<bool> radarEnableCorpseConfig;
         public static ConfigEntry<KeyboardShortcut> radarEnableShortCutConfig;
+        public static ConfigEntry<KeyboardShortcut> radarEnableCorpseShortCutConfig;
         public static bool isShortcutDown = false;
+        public static bool isCorpseShortcutDown = false;
 
         public static ConfigEntry<float> radarSizeConfig;
         public static ConfigEntry<float> radarDistanceScaleConfig;
@@ -75,6 +77,7 @@ namespace Radar
             radarEnablePulseConfig = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
             radarEnableCorpseConfig = Config.Bind(baseSettings, "Radar Corpse Detection Enabled", true, "Adds detection for corpse.");
             radarEnableShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable radar", new KeyboardShortcut(KeyCode.F10));
+            radarEnableCorpseShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable corpse dection", new KeyboardShortcut(KeyCode.F11));
 
             radarSizeConfig = Config.Bind<float>(radarSettings, "Radar HUD Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
             radarDistanceScaleConfig = Config.Bind<float>(radarSettings, "Radar HUD Blip Disntance Scale Offset", 0.7f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
@@ -105,6 +108,7 @@ namespace Radar
             GameObject gamePlayerObject = player.gameObject;
             HaloRadar haloRadar = gamePlayerObject.GetComponent<HaloRadar>();
 
+            // enable radar shortcut process
             if (!isShortcutDown && radarEnableShortCutConfig.Value.IsDown())
             {
                 radarEnableConfig.Value = !radarEnableConfig.Value;
@@ -114,6 +118,18 @@ namespace Radar
             if (!radarEnableShortCutConfig.Value.IsDown())
             {
                 isShortcutDown = false;
+            }
+
+            // // enable corpse shortcut process
+            if (!isCorpseShortcutDown && radarEnableCorpseShortCutConfig.Value.IsDown())
+            {
+                radarEnableCorpseConfig.Value = !radarEnableCorpseConfig.Value;
+                isCorpseShortcutDown = true;
+            }
+
+            if (!radarEnableShortCutConfig.Value.IsDown())
+            {
+                isCorpseShortcutDown = false;
             }
 
             if (radarEnableConfig.Value && haloRadar == null)
