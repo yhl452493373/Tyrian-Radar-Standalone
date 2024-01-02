@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace Radar
 {
-    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.8")]
+    [BepInPlugin("Tyrian.Radar", "Radar", "1.0.9")]
     public class Radar : BaseUnityPlugin
     {
         private static GameWorld gameWorld;
