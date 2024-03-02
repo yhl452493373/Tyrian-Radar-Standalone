@@ -12,15 +12,25 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<Optimize>False</Optimize>
 	</PropertyGroup>
+	
+	<Target Name="CopyBundle" AfterTargets="Build">
+		<Copy SourceFiles="assets\radarhud.bundle" DestinationFolder="$(OutDir)\radar\" />
+	</Target>
 
 	<ItemGroup>
-		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll" />
-		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll" />
+		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll">
+			<Private>False</Private>
+		</Reference>
 		<Reference Include="Comfort">
 			<HintPath>dependencies\Comfort.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine">
 			<HintPath>dependencies\UnityEngine.dll</HintPath>
+			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AssetBundleModule">
 			<HintPath>dependencies\UnityEngine.AssetBundleModule.dll</HintPath>
@@ -40,6 +50,7 @@
 		</Reference>
 		<Reference Include="Aki.Reflection">
 			<HintPath>dependencies\Aki.Reflection.dll</HintPath>
-		</Reference>
+          <Private>False</Private>
+        </Reference>
 	</ItemGroup>
 </Project>
