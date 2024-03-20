@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	
 	<PropertyGroup>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<AssemblyName>Tyrian-Radar</AssemblyName>
 		<DependencyVersion>3.7.5</DependencyVersion>
+	</PropertyGroup>
+	<PropertyGroup>
+    	<LangVersion>9</LangVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -11,8 +14,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll"/>
-		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll"/>
+		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll" />
+		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll" />
 		<Reference Include="Comfort">
 			<HintPath>dependencies\Comfort.dll</HintPath>
 		</Reference>
@@ -30,6 +33,13 @@
 		<Reference Include="UnityEngine.UI">
 			<HintPath>dependencies\UnityEngine.UI.dll</HintPath>
 			<Private>False</Private>
+		</Reference>
+		<Reference Include="UnityEngine.PhysicsModule">
+			<HintPath>dependencies\UnityEngine.PhysicsModule.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="Aki.Reflection">
+			<HintPath>dependencies\Aki.Reflection.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 </Project>

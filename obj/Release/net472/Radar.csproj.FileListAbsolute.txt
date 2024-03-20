@@ -93,3 +93,4 @@ D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.CoreCompileInputs
 D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Radar.csproj.CopyComplete
 D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.dll
 D:\Git\Tyrian-Radar-Standalone\obj\Release\net472\Tyrian-Radar.pdb
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net472\Aki.Reflection.dll

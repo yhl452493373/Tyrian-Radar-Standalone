@@ -1,0 +1,15 @@
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.csproj.AssemblyReference.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.GeneratedMSBuildEditorConfig.editorconfig
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.AssemblyInfoInputs.cache
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.AssemblyInfo.cs
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.csproj.CoreCompileInputs.cache
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\Tyrian-Radar.pdb
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\Aki.Reflection.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\Assembly-CSharp.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\BepInEx.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\Comfort.dll
+D:\Git\Tyrian-Radar-Standalone\bin\Release\net48\UnityEngine.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Radar.csproj.CopyComplete
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Tyrian-Radar.dll
+D:\Git\Tyrian-Radar-Standalone\obj\Release\net48\Tyrian-Radar.pdb
