@@ -13,6 +13,7 @@ using Object = UnityEngine.Object;
 using LootItem = EFT.Interactive.LootItem;
 using Debug = UnityEngine.Debug;
 using System.Linq;
+using static MineDirectional;
 
 namespace Radar
 {
@@ -26,9 +27,11 @@ namespace Radar
         public static Dictionary<GameObject, HashSet<Material>> objectsMaterials = new Dictionary<GameObject, HashSet<Material>>();
 
         const string baseSettings = "Base Settings";
+        const string advancedSettings = "Advanced Settings";
         const string colorSettings = "Color Settings";
         const string radarSettings = "Radar Settings";
 
+        public static ConfigEntry<string> radarLanguage;
         public static ConfigEntry<bool> radarEnableConfig;
         public static ConfigEntry<bool> radarEnablePulseConfig;
         public static ConfigEntry<bool> radarEnableCorpseConfig;
@@ -43,7 +46,7 @@ namespace Radar
         public static ConfigEntry<float> radarSizeConfig;
         public static ConfigEntry<float> radarBlipSizeConfig;
         public static ConfigEntry<float> radarDistanceScaleConfig;
-        public static ConfigEntry<float> radarHeightThresholdeScaleOffsetConfig;
+        public static ConfigEntry<float> radarYHeightThreshold;
         public static ConfigEntry<float> radarOffsetYConfig;
         public static ConfigEntry<float> radarOffsetXConfig;
         public static ConfigEntry<float> radarRangeConfig;
@@ -79,39 +82,46 @@ namespace Radar
             instance = this;
             DontDestroyOnLoad(gameObject);
 
-            var cul = System.Globalization.CultureInfo.CurrentCulture;
-            Debug.LogError("cul: " + cul);
-            var lcid = System.Globalization.CultureInfo.CurrentCulture.LCID;
-            Debug.LogError("lcid: " + lcid);
-
             // Add a custom configuration option for the Apply button
-            radarEnableConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
-            radarEnableShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable radar", new KeyboardShortcut(KeyCode.F10));
-            radarEnablePulseConfig = Config.Bind(baseSettings, "Radar Pulse Enabled", true, "Adds the radar pulse effect.");
-            
-            radarEnableCorpseConfig = Config.Bind(baseSettings, "Radar Corpse Detection Enabled", true, "Adds detection for corpse.");
-            radarEnableCorpseShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable corpse dection", new KeyboardShortcut(KeyCode.F11));
-            radarEnableLootConfig = Config.Bind(baseSettings, "Radar Loot Detection Enabled", true, "Adds detection for loot.");
-            radarEnableLootShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable loot dection", new KeyboardShortcut(KeyCode.F9));
+            radarLanguage = Config.Bind<string>(baseSettings, "Language", "EN",
+                new ConfigDescription("Preferred language, if not available will tried English",
+                new AcceptableValueList<string>("EN", "ZH")));
 
-            radarSizeConfig = Config.Bind<float>(radarSettings, "HUD Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud.", new AcceptableValueRange<float>(0.0f, 1f)));
-            radarBlipSizeConfig = Config.Bind<float>(radarSettings, "HUD Blip Size", 1f, new ConfigDescription("The Scale Offset for the Radar Hud Blip.", new AcceptableValueRange<float>(0.0f, 1f)));
-            radarDistanceScaleConfig = Config.Bind<float>(radarSettings, "HUD Blip Disntance Scale Offset", 0.7f, new ConfigDescription("This scales the blips distances from the player, effectively zooming it in and out.", new AcceptableValueRange<float>(0.1f, 2f)));
-            radarHeightThresholdeScaleOffsetConfig = Config.Bind<float>(radarSettings, "HUD Blip Height Threshold Offset", 1f, new ConfigDescription("This scales the distance threshold for blips turning into up or down arrows depending on enemies height levels.", new AcceptableValueRange<float>(1f, 4f)));
-            radarOffsetYConfig = Config.Bind<float>(radarSettings, "HUD Y Position Offset", 0f, new ConfigDescription("The Y Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-4000f, 4000f)));
-            radarOffsetXConfig = Config.Bind<float>(radarSettings, "HUD X Position Offset", 0f, new ConfigDescription("The X Position Offset for the Radar Hud.", new AcceptableValueRange<float>(-4000f, 4000f)));
-            radarRangeConfig = Config.Bind<float>(radarSettings, "Radar Range", 128f, new ConfigDescription("The range within which enemies are displayed on the radar.", new AcceptableValueRange<float>(32f, 512f)));
-            radarScanInterval = Config.Bind<float>(radarSettings, "Radar Scan Interval", 1f, new ConfigDescription("The interval between two scans.", new AcceptableValueRange<float>(0.1f, 30f)));
+            radarEnableConfig = Config.Bind(baseSettings, Locales.GetTranslatedString("radar_enable"), true);
+            radarEnableShortCutConfig = Config.Bind(baseSettings, Locales.GetTranslatedString("radar_enable_shortcut"), new KeyboardShortcut(KeyCode.F10));
+            radarEnablePulseConfig = Config.Bind(baseSettings, Locales.GetTranslatedString("radar_pulse_enable"), true, Locales.GetTranslatedString("radar_pulse_enable_info"));
+
+            radarEnableCorpseConfig = Config.Bind(advancedSettings, Locales.GetTranslatedString("radar_corpse_enable"), true);
+            radarEnableCorpseShortCutConfig = Config.Bind(advancedSettings, Locales.GetTranslatedString("radar_corpse_shortcut"), new KeyboardShortcut(KeyCode.F11));
+            radarEnableLootConfig = Config.Bind(advancedSettings, Locales.GetTranslatedString("radar_loot_enable"), true);
+            radarEnableLootShortCutConfig = Config.Bind(advancedSettings, Locales.GetTranslatedString("radar_loot_shortcut"), new KeyboardShortcut(KeyCode.F9));
+
+            radarSizeConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_hud_size"), 0.8f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_hud_size_info"), new AcceptableValueRange<float>(0.0f, 1f)));
+            radarBlipSizeConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_blip_size"), 0.7f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_blip_size_info"), new AcceptableValueRange<float>(0.0f, 1f)));
+            radarDistanceScaleConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_distance_scale"), 0.7f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_distance_scale_info"), new AcceptableValueRange<float>(0.1f, 2f)));
+            radarYHeightThreshold = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_y_height_threshold"), 1f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_y_height_threshold_info"), new AcceptableValueRange<float>(1f, 4f)));
+            radarOffsetXConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_x_position"), 0f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_x_position_info"), new AcceptableValueRange<float>(-4000f, 4000f)));
+            radarOffsetYConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_y_position"), 0f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_y_position_info"), new AcceptableValueRange<float>(-4000f, 4000f)));
+            radarRangeConfig = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_range"), 128f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_range_info"), new AcceptableValueRange<float>(32f, 512f)));
+            radarScanInterval = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_scan_interval"), 1f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_scan_interval_info"), new AcceptableValueRange<float>(0.1f, 30f)));
+            radarLootThreshold = Config.Bind<float>(radarSettings, Locales.GetTranslatedString("radar_loot_threshold"), 30000f,
+                new ConfigDescription(Locales.GetTranslatedString("radar_loot_threshold_info"), new AcceptableValueRange<float>(1000f, 100000f)));
             
-            radarLootThreshold = Config.Bind<float>(radarSettings, "Loot Threshold", 30000f, new ConfigDescription("Item above this price will show on radar", new AcceptableValueRange<float>(1000f, 100000f)));
-            
-            bossBlipColor = Config.Bind<Color>(colorSettings, "Boss Blip Color", new Color(1f, 0f, 0f));
-            scavBlipColor = Config.Bind<Color>(colorSettings, "Scav Blip Color", new Color(0f, 1f, 0f));
-            usecBlipColor = Config.Bind<Color>(colorSettings, "Usec PMC Blip Color", new Color(1f, 1f, 0f));
-            bearBlipColor = Config.Bind<Color>(colorSettings, "Bear PMC Blip Color", new Color(1f, 0.5f, 0f));
-            corpseBlipColor = Config.Bind<Color>(colorSettings, "Corpse Blip Color", new Color(0.5f, 0.5f, 0.5f));
-            lootBlipColor = Config.Bind<Color>(colorSettings, "Loot Blip Color", new Color(0.9f, 0.5f, 0.5f));
-            backgroundColor = Config.Bind<Color>(colorSettings, "Background Color", new Color(0f, 0.7f, 0.85f));
+            bossBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_boss_blip_color"), new Color(1f, 0f, 0f));
+            scavBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_scav_blip_color"), new Color(0f, 1f, 0f));
+            usecBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_usec_blip_color"), new Color(1f, 1f, 0f));
+            bearBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_bear_blip_color"), new Color(1f, 0.5f, 0f));
+            corpseBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_corpse_blip_color"), new Color(0.5f, 0.5f, 0.5f));
+            lootBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_loot_blip_color"), new Color(0.9f, 0.5f, 0.5f));
+            backgroundColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_background_blip_color"), new Color(0f, 0.7f, 0.85f));
         }
 
         private void Update()
@@ -269,8 +279,8 @@ namespace Radar
                     radarScaleStart = radarHudBasePosition.localScale;
                     radarPositionYStart = radarHudBasePosition.position.y;
                     radarPositionXStart = radarHudBasePosition.position.x;
-                    radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
-                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarSizeConfig.Value, radarScaleStart.x * Radar.radarSizeConfig.Value);
+                    radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
+                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
 
                     radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
                     radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
@@ -279,8 +289,8 @@ namespace Radar
                     radarHud.SetActive(true);
                 }
 
-                radarHudBasePosition.position = new Vector2(radarPositionYStart + Radar.radarOffsetYConfig.Value, radarPositionXStart + Radar.radarOffsetXConfig.Value);
-                radarHudBasePosition.localScale = new Vector2(radarScaleStart.y * Radar.radarSizeConfig.Value, radarScaleStart.x * Radar.radarSizeConfig.Value);
+                radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
+                radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
                 radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
                 
                 UpdateLoot();

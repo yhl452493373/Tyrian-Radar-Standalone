@@ -26,7 +26,7 @@ namespace Radar
             }
             else
             {
-                float totalThreshold = playerHeight * 1.5f * Radar.radarHeightThresholdeScaleOffsetConfig.Value;
+                float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
                 if (Mathf.Abs(blipPosition.y) <= totalThreshold)
                 {
                     blipImage.sprite = HaloRadar.EnemyBlip;
