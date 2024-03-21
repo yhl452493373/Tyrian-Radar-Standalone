@@ -79,6 +79,11 @@ namespace Radar
             instance = this;
             DontDestroyOnLoad(gameObject);
 
+            var cul = System.Globalization.CultureInfo.CurrentCulture;
+            Debug.LogError("cul: " + cul);
+            var lcid = System.Globalization.CultureInfo.CurrentCulture.LCID;
+            Debug.LogError("lcid: " + lcid);
+
             // Add a custom configuration option for the Apply button
             radarEnableConfig = Config.Bind(baseSettings, "Radar Enabled", true, "Adds a Radar feature to the undersuit when you wear it.");
             radarEnableShortCutConfig = Config.Bind(baseSettings, "Short cut for enable/disable radar", new KeyboardShortcut(KeyCode.F10));

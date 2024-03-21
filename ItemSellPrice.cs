@@ -42,15 +42,13 @@ class ItemExtensions
     {
         public string Name;
         public int Price;
-        public string Currency;
         public double Course;
         public int Count;
 
-        public TraderOffer(string name, int price, string currency, double course, int count)
+        public TraderOffer(string name, int price, double course, int count)
         {
             Name = name;
             Price = price;
-            Currency = currency;
             Course = course;
             Count = count;
         }
@@ -62,7 +60,6 @@ class ItemExtensions
         return result is null ? null : new(
             trader.LocalizedName,
             result.Value.Amount,
-            CurrencyUtil.GetCurrencyCharById(result.Value.CurrencyId),
             trader.GetSupplyData().CurrencyCourses[result.Value.CurrencyId],
             item.StackObjectsCount
         );
