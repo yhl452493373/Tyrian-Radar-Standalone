@@ -18,38 +18,38 @@
 	</Target>
 
 	<ItemGroup>
-		<Reference Include="dependencies\$(DependencyVersion)\Assembly-CSharp.dll">
+		<Reference Include="..\dependencies\$(DependencyVersion)\Assembly-CSharp.dll">
 			<Private>False</Private>
 		</Reference>
-		<Reference Include="dependencies\$(DependencyVersion)\BepInEx.dll">
+		<Reference Include="..\dependencies\$(DependencyVersion)\BepInEx.dll">
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Comfort">
-			<HintPath>dependencies\Comfort.dll</HintPath>
+			<HintPath>..\dependencies\Comfort.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine">
-			<HintPath>dependencies\UnityEngine.dll</HintPath>
+			<HintPath>..\dependencies\UnityEngine.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.AssetBundleModule">
-			<HintPath>dependencies\UnityEngine.AssetBundleModule.dll</HintPath>
+			<HintPath>..\dependencies\UnityEngine.AssetBundleModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
-			<HintPath>dependencies\UnityEngine.CoreModule.dll</HintPath>
+			<HintPath>..\dependencies\UnityEngine.CoreModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UI">
-			<HintPath>dependencies\UnityEngine.UI.dll</HintPath>
+			<HintPath>..\dependencies\UnityEngine.UI.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="UnityEngine.PhysicsModule">
-			<HintPath>dependencies\UnityEngine.PhysicsModule.dll</HintPath>
+			<HintPath>..\dependencies\UnityEngine.PhysicsModule.dll</HintPath>
 			<Private>False</Private>
 		</Reference>
 		<Reference Include="Aki.Reflection">
-			<HintPath>dependencies\Aki.Reflection.dll</HintPath>
+			<HintPath>..\dependencies\Aki.Reflection.dll</HintPath>
           <Private>False</Private>
         </Reference>
 	</ItemGroup>
