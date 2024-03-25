@@ -4,6 +4,7 @@ using Comfort.Common;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Radar.Patches;
 using UnityEngine;
 
 namespace Radar
@@ -111,6 +112,8 @@ namespace Radar
             backgroundColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_background_blip_color"), new Color(0f, 0.7f, 0.85f));
             
             AssetBundleManager.LoadAssetBundle();
+            
+            new GameStartPatch().Enable();
         }
 
         private void Update()
@@ -159,17 +162,33 @@ namespace Radar
                 lootSCDown = false;
             }
 
-            if (radarEnableConfig.Value && haloRadar == null)
+            // if (radarEnableConfig.Value && haloRadar == null)
+            // {
+            //     // Add the HaloRadar component if it doesn't exist.
+            //     gamePlayerObject.AddComponent<HaloRadar>();
+            // }
+            // else if (!radarEnableConfig.Value && haloRadar != null)
+            // {
+            //     // Remove the HaloRadar component if it exists.
+            //     haloRadar.Destory();
+            //     Destroy(haloRadar);
+            // }
+        }
+
+        internal void OnRaidGameStart()
+        {
+            Log.LogInfo("Game started, loading radar hud");
+            var playerCamera = GameObject.Find("FPS Camera");
+            if (playerCamera == null)
             {
-                // Add the HaloRadar component if it doesn't exist.
-                gamePlayerObject.AddComponent<HaloRadar>();
+                Log.LogError("FPS Camera not found");
+                return;
             }
-            else if (!radarEnableConfig.Value && haloRadar != null)
-            {
-                // Remove the HaloRadar component if it exists.
-                haloRadar.Destory();
-                Destroy(haloRadar);
-            }
+            
+            var radarGo = Instantiate(AssetBundleManager.RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
+            radarGo.transform.SetParent(playerCamera.transform);
+            Log.LogInfo("Radar instantiated");
+            radarGo.AddComponent<HaloRadar>();
         }
     }
 }

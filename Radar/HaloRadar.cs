@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using LootItem = EFT.Interactive.LootItem;
 using System.Linq;
+using Object = UnityEngine.Object;
 
 namespace Radar
 {
@@ -16,9 +17,7 @@ namespace Radar
         public static GameWorld gameWorld;
         public static Player player;
 
-        public static GameObject radarHud;
         public static GameObject radarBlipHud;
-        public static GameObject playerCamera;
 
         public static RectTransform radarHudBlipBasePosition { get; private set; }
         public static RectTransform radarHudBasePosition { get; private set; }
@@ -42,78 +41,70 @@ namespace Radar
 
         public HashSet<string> lootList = new HashSet<string>();
         public List<BlipLoot> lootCustomObject = new List<BlipLoot>();
-        
-        private void Update()
+
+        private void Awake()
         {
-            if (MapLoaded())
+            if (!Singleton<GameWorld>.Instantiated)
             {
-                gameWorld = Singleton<GameWorld>.Instance;
-                if (gameWorld.MainPlayer == null)
-                {
-                    return;
-                }
-
-                if (player == null)
-                {
-                    player = gameWorld.MainPlayer;
-                }
-
-                if (playerCamera == null)
-                {
-                    playerCamera = GameObject.Find("FPS Camera");
-                    if (playerCamera == null)
-                    {
-                        return;
-                    }
-                }
-
-                if (radarHud == null)
-                {
-                    var radarHudBase = Instantiate(AssetBundleManager.RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
-                    radarHud = radarHudBase as GameObject;
-                    radarHud.transform.parent = playerCamera.transform;
-                    radarHudBasePosition = radarHud.transform.Find("Radar") as RectTransform;
-                    radarHudBlipBasePosition = radarHud.transform.Find("Radar/RadarBorder") as RectTransform;
-                    radarHudBlipBasePosition.SetAsLastSibling();
-                    radarHudPulse = radarHud.transform.Find("Radar/RadarPulse") as RectTransform;
-                    radarScaleStart = radarHudBasePosition.localScale;
-                    radarPositionYStart = radarHudBasePosition.position.y;
-                    radarPositionXStart = radarHudBasePosition.position.x;
-                    radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
-                    radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
-
-                    radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
-                    radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
-                    radarHud.transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
-
-                    radarHud.SetActive(true);
-                }
-
-                radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
-                radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
-                radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, playerCamera.transform.eulerAngles.y);
-                
-                UpdateLoot();
-                long rslt = UpdateActivePlayer();
-                UpdateRadar(rslt != -1);
-
-                if (radarInterval != Radar.radarScanInterval.Value)
-                {
-                    radarInterval = Radar.radarScanInterval.Value;
-                    if (Radar.radarEnablePulseConfig.Value)
-                    {
-                        StartPulseAnimation();
-                    }
-                }
+                Radar.Log.LogWarning("GameWorld singleton not found.");
+                Destroy(gameObject);
+                return;
             }
+            
+            gameWorld = Singleton<GameWorld>.Instance;
+            if (gameWorld.MainPlayer == null)
+            {
+                Radar.Log.LogWarning("MainPlayer is null.");
+                gameObject.SetActive(false);
+                return;
+            }
+            
+            player = gameWorld.MainPlayer;
+                
+            radarHudBasePosition = (transform.Find("Radar") as RectTransform)!;
+            radarHudBlipBasePosition = (transform.Find("Radar/RadarBorder") as RectTransform)!;
+            radarHudBlipBasePosition.SetAsLastSibling();
+            radarHudPulse = (transform.Find("Radar/RadarPulse") as RectTransform)!;
+            radarScaleStart = radarHudBasePosition.localScale;
+            radarPositionYStart = radarHudBasePosition.position.y;
+            radarPositionXStart = radarHudBasePosition.position.x;
+            radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
+            radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
+
+            
+            radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
+            radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
+            transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
+            
+            // gameObject.SetActive(Radar.radarEnableConfig.Value);
+            Radar.Log.LogInfo("Radar loaded");
         }
 
-        public void Destory()
+        private void OnDestroy()
         {
-            if (radarHud != null)
+            
+        }
+
+        private void Update()
+        {
+            
+            radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
+            radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
+            radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, transform.parent.transform.eulerAngles.y);
+            
+            UpdateLoot();
+            long rslt = UpdateActivePlayer();
+            UpdateRadar(rslt != -1);
+
+            if (radarInterval != Radar.radarScanInterval.Value)
             {
-                Destroy(radarHud);
+                radarInterval = Radar.radarScanInterval.Value;
+                if (Radar.radarEnablePulseConfig.Value)
+                {
+                    StartPulseAnimation();
+                }
             }
+            
         }
 
         private void StartPulseAnimation()
