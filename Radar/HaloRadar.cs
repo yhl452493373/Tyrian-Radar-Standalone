@@ -55,7 +55,7 @@ namespace Radar
             if (gameWorld.MainPlayer == null)
             {
                 Radar.Log.LogWarning("MainPlayer is null.");
-                gameObject.SetActive(false);
+                Destroy(gameObject);
                 return;
             }
             
@@ -76,13 +76,7 @@ namespace Radar
             radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
             transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
             
-            // gameObject.SetActive(Radar.radarEnableConfig.Value);
             Radar.Log.LogInfo("Radar loaded");
-        }
-
-        private void OnDestroy()
-        {
-            
         }
 
         private void Update()

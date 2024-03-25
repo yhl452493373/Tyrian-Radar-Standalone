@@ -17,10 +17,12 @@ namespace Radar.Patches
         }
 
         [PatchPostfix]
-        private static void Postfix()
+        private static void Postfix(GameWorld __instance)
         {
             Radar.Log.LogDebug("GameStartPatch:Postfix");
-            Radar.Instance.OnRaidGameStart();
+            
+            Radar.Log.LogInfo("Game started, loading radar hud");
+            __instance.gameObject.AddComponent<InRaidRadarManager>();
         }
     }
 }

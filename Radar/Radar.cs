@@ -12,9 +12,6 @@ namespace Radar
     [BepInPlugin("Tyrian.Radar", "Radar", "1.1.1")]
     public class Radar : BaseUnityPlugin
     {
-        private static GameWorld gameWorld;
-        public static bool MapLoaded() => Singleton<GameWorld>.Instantiated;
-        public static Player player;
         internal static Radar Instance {get; private set;}
         
         public static Dictionary<GameObject, HashSet<Material>> objectsMaterials = new Dictionary<GameObject, HashSet<Material>>();
@@ -32,9 +29,6 @@ namespace Radar
         public static ConfigEntry<KeyboardShortcut> radarEnableShortCutConfig;
         public static ConfigEntry<KeyboardShortcut> radarEnableCorpseShortCutConfig;
         public static ConfigEntry<KeyboardShortcut> radarEnableLootShortCutConfig;
-        public static bool enableSCDown = false;
-        public static bool corpseSCDown = false;
-        public static bool lootSCDown = false;
 
         public static ConfigEntry<float> radarSizeConfig;
         public static ConfigEntry<float> radarBlipSizeConfig;
@@ -114,81 +108,6 @@ namespace Radar
             AssetBundleManager.LoadAssetBundle();
             
             new GameStartPatch().Enable();
-        }
-
-        private void Update()
-        {
-            if (!MapLoaded())
-                return;
-
-            gameWorld = Singleton<GameWorld>.Instance;
-            player = gameWorld.MainPlayer;
-            if (gameWorld == null || player == null)
-                return;
-
-            GameObject gamePlayerObject = player.gameObject;
-            HaloRadar haloRadar = gamePlayerObject.GetComponent<HaloRadar>();
-
-            // enable radar shortcut process
-            if (!enableSCDown && radarEnableShortCutConfig.Value.IsDown())
-            {
-                radarEnableConfig.Value = !radarEnableConfig.Value;
-                enableSCDown = true;
-            }
-            if (!radarEnableShortCutConfig.Value.IsDown())
-            {
-                enableSCDown = false;
-            }
-
-            // enable corpse shortcut process
-            if (!corpseSCDown && radarEnableCorpseShortCutConfig.Value.IsDown())
-            {
-                radarEnableCorpseConfig.Value = !radarEnableCorpseConfig.Value;
-                corpseSCDown = true;
-            }
-            if (!radarEnableCorpseShortCutConfig.Value.IsDown())
-            {
-                corpseSCDown = false;
-            }
-
-            // enable loot shortcut process
-            if (!lootSCDown && radarEnableLootShortCutConfig.Value.IsDown())
-            {
-                radarEnableLootConfig.Value = !radarEnableLootConfig.Value;
-                lootSCDown = true;
-            }
-            if (!radarEnableLootShortCutConfig.Value.IsDown())
-            {
-                lootSCDown = false;
-            }
-
-            // if (radarEnableConfig.Value && haloRadar == null)
-            // {
-            //     // Add the HaloRadar component if it doesn't exist.
-            //     gamePlayerObject.AddComponent<HaloRadar>();
-            // }
-            // else if (!radarEnableConfig.Value && haloRadar != null)
-            // {
-            //     // Remove the HaloRadar component if it exists.
-            //     haloRadar.Destory();
-            //     Destroy(haloRadar);
-            // }
-        }
-
-        internal void OnRaidGameStart()
-        {
-            Log.LogInfo("Game started, loading radar hud");
-            var playerCamera = GameObject.Find("FPS Camera");
-            if (playerCamera == null)
-            {
-                Log.LogError("FPS Camera not found");
-                return;
-            }
-            
-            var radarGo = Instantiate(AssetBundleManager.RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
-            radarGo.transform.SetParent(playerCamera.transform);
-            Log.LogInfo("Radar instantiated");
-            radarGo.AddComponent<HaloRadar>();
         }
     }
 }
