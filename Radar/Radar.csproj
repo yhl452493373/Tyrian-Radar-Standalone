@@ -4,6 +4,7 @@
 		<TargetFramework>net48</TargetFramework>
 		<AssemblyName>Tyrian-Radar</AssemblyName>
 		<DependencyVersion>3.8.0</DependencyVersion>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<PropertyGroup>
     	<LangVersion>9</LangVersion>
@@ -12,10 +13,6 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<Optimize>False</Optimize>
 	</PropertyGroup>
-	
-	<Target Name="CopyBundle" AfterTargets="Build">
-		<Copy SourceFiles="assets\radarhud.bundle" DestinationFolder="$(OutDir)\radar\" />
-	</Target>
 
 	<ItemGroup>
 		<Reference Include="..\dependencies\$(DependencyVersion)\Assembly-CSharp.dll">
@@ -52,5 +49,10 @@
 			<HintPath>..\dependencies\Aki.Reflection.dll</HintPath>
           <Private>False</Private>
         </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="bundle\radarhud.bundle" />
+	  <EmbeddedResource Include="bundle\radarhud.bundle" />
 	</ItemGroup>
 </Project>

@@ -14,7 +14,8 @@ namespace Radar
         private static GameWorld gameWorld;
         public static bool MapLoaded() => Singleton<GameWorld>.Instantiated;
         public static Player player;
-        public static Radar instance;
+        internal static Radar Instance {get; private set;}
+        
         public static Dictionary<GameObject, HashSet<Material>> objectsMaterials = new Dictionary<GameObject, HashSet<Material>>();
 
         const string baseSettings = "Base Settings";
@@ -53,24 +54,19 @@ namespace Radar
         public static ConfigEntry<Color> backgroundColor;
 
 
-        public static ManualLogSource logger;
-
-        public static Radar Instance
-        {
-            get { return instance; }
-        }
+        internal static ManualLogSource Log { get; private set; } = null!;
 
         private void Awake()
         {
-            logger = Logger;
-            logger.LogInfo("Radar Plugin Enabled.");
-            if (instance != null && instance != this)
+            Log = Logger;
+            Log.LogInfo("Radar Plugin Enabled.");
+            if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
 
             // Add a custom configuration option for the Apply button
@@ -113,6 +109,8 @@ namespace Radar
             corpseBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_corpse_blip_color"), new Color(0.5f, 0.5f, 0.5f));
             lootBlipColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_loot_blip_color"), new Color(0.9f, 0.5f, 0.5f));
             backgroundColor = Config.Bind<Color>(colorSettings, Locales.GetTranslatedString("radar_background_blip_color"), new Color(0f, 0.7f, 0.85f));
+            
+            AssetBundleManager.LoadAssetBundle();
         }
 
         private void Update()

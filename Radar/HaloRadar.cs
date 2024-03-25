@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Comfort.Common;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 using LootItem = EFT.Interactive.LootItem;
 using System.Linq;
 
@@ -16,9 +15,7 @@ namespace Radar
     {
         public static GameWorld gameWorld;
         public static Player player;
-        public static Object RadarhudPrefab { get; private set; } 
-        public static Object RadarBliphudPrefab { get; private set; }
-        public static AssetBundle radarBundle;
+
         public static GameObject radarHud;
         public static GameObject radarBlipHud;
         public static GameObject playerCamera;
@@ -28,10 +25,7 @@ namespace Radar
         public static RectTransform radarHudPulse { get; private set; }
         public static RectTransform radarHudBlip { get; private set; }
         public static Image blipImage;
-        public static Sprite EnemyBlip;
-        public static Sprite EnemyBlipDown;
-        public static Sprite EnemyBlipUp;
-        public static Sprite EnemyBlipDead;
+        
         public static Coroutine pulseCoroutine;
         public static float animationDuration = 1f;
         public static float pauseDuration = 4f;
@@ -48,27 +42,7 @@ namespace Radar
 
         public HashSet<string> lootList = new HashSet<string>();
         public List<BlipLoot> lootCustomObject = new List<BlipLoot>();
-
-        private void Start()
-        {
-            // Create our prefabs from our bundles.
-            if (RadarhudPrefab == null)
-            {
-                String haloRadarHUD = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/radar/radarhud.bundle");
-                if (!File.Exists(haloRadarHUD))
-                    return;
-                radarBundle = AssetBundle.LoadFromFile(haloRadarHUD);
-                if (radarBundle == null)
-                    return;
-                RadarhudPrefab = radarBundle.LoadAsset("Assets/Examples/Halo Reach/Hud/RadarHUD.prefab");
-                RadarBliphudPrefab = radarBundle.LoadAsset("Assets/Examples/Halo Reach/Hud/RadarBlipHUD.prefab");
-
-                EnemyBlip = radarBundle.LoadAsset<Sprite>("EnemyBlip");
-                EnemyBlipUp = radarBundle.LoadAsset<Sprite>("EnemyBlipUp");
-                EnemyBlipDown = radarBundle.LoadAsset<Sprite>("EnemyBlipDown");
-                EnemyBlipDead = radarBundle.LoadAsset<Sprite>("EnemyBlipDead");
-            }
-        }
+        
         private void Update()
         {
             if (MapLoaded())
@@ -95,7 +69,7 @@ namespace Radar
 
                 if (radarHud == null)
                 {
-                    var radarHudBase = Instantiate(RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
+                    var radarHudBase = Instantiate(AssetBundleManager.RadarhudPrefab, playerCamera.transform.position, playerCamera.transform.rotation);
                     radarHud = radarHudBase as GameObject;
                     radarHud.transform.parent = playerCamera.transform;
                     radarHudBasePosition = radarHud.transform.Find("Radar") as RectTransform;

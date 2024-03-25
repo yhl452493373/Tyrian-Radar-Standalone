@@ -20,7 +20,7 @@ namespace Radar
         {
             if (isDead)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDead;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDead;
                 blipImage.color = Radar.corpseBlipColor.Value;
             }
             else
@@ -28,15 +28,15 @@ namespace Radar
                 float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
                 if (Mathf.Abs(blipPosition.y) <= totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlip;
+                    blipImage.sprite = AssetBundleManager.EnemyBlip;
                 }
                 else if (blipPosition.y > totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlipUp;
+                    blipImage.sprite = AssetBundleManager.EnemyBlipUp;
                 }
                 else if (blipPosition.y < -totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlipDown;
+                    blipImage.sprite = AssetBundleManager.EnemyBlipDown;
                 }
                 // set blip color
                 switch (enemyPlayer.Profile.Info.Side)
@@ -134,14 +134,14 @@ namespace Radar
             float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
             if (blipPosition.y > totalThreshold)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipUp;
+                blipImage.sprite = AssetBundleManager.EnemyBlipUp;
             }
             else if (blipPosition.y < -totalThreshold)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDown;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDown;
             } else
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDead;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDead;
             }
             blipImage.color = Radar.lootBlipColor.Value;
 
@@ -192,7 +192,7 @@ namespace Radar
 
         private void SetBlip()
         {
-            var blipInstance = Object.Instantiate(HaloRadar.RadarBliphudPrefab,
+            var blipInstance = Object.Instantiate(AssetBundleManager.RadarBliphudPrefab,
                 HaloRadar.radarHudBlipBasePosition.position, HaloRadar.radarHudBlipBasePosition.rotation);
             blip = blipInstance as GameObject;
             blip.transform.parent = HaloRadar.radarHudBlipBasePosition.transform;
