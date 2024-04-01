@@ -9,7 +9,6 @@ namespace Radar
 {
     public class BlipPlayer : Target
     {
-        private const float playerHeight = 1.8f;
         private Player enemyPlayer = null;
         private bool isDead = false;
         public BlipPlayer(Player enemyPlayer)
@@ -132,7 +131,18 @@ namespace Radar
 
         private void UpdateBlipImage()
         {
-            blipImage.sprite = HaloRadar.EnemyBlipDead;
+            float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
+            if (blipPosition.y > totalThreshold)
+            {
+                blipImage.sprite = HaloRadar.EnemyBlipUp;
+            }
+            else if (blipPosition.y < -totalThreshold)
+            {
+                blipImage.sprite = HaloRadar.EnemyBlipDown;
+            } else
+            {
+                blipImage.sprite = HaloRadar.EnemyBlipDead;
+            }
             blipImage.color = Radar.lootBlipColor.Value;
 
             float blipSize = Radar.radarBlipSizeConfig.Value * 3f;
@@ -142,6 +152,7 @@ namespace Radar
         public void Update(bool updatePosition)
         {
             blipPosition.x = itemPosition.x - playerPosition.x;
+            blipPosition.y = itemPosition.y - playerPosition.y;
             blipPosition.z = itemPosition.z - playerPosition.z;
 
             bool _show = Radar.radarEnableLootConfig.Value && this.price > Radar.radarLootThreshold.Value && blipPosition.x * blipPosition.x + blipPosition.z * blipPosition.z
@@ -176,6 +187,8 @@ namespace Radar
         protected Vector3 blipPosition;
         public static Vector3 playerPosition;
         public static float radarRange;
+
+        protected float playerHeight = 1.8f;
 
         private void SetBlip()
         {
