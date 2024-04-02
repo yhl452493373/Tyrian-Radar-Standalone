@@ -20,7 +20,7 @@ namespace Radar
         {
             if (isDead)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDead;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDead;
                 blipImage.color = Radar.corpseBlipColor.Value;
             }
             else
@@ -28,15 +28,15 @@ namespace Radar
                 float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
                 if (Mathf.Abs(blipPosition.y) <= totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlip;
+                    blipImage.sprite = AssetBundleManager.EnemyBlip;
                 }
                 else if (blipPosition.y > totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlipUp;
+                    blipImage.sprite = AssetBundleManager.EnemyBlipUp;
                 }
                 else if (blipPosition.y < -totalThreshold)
                 {
-                    blipImage.sprite = HaloRadar.EnemyBlipDown;
+                    blipImage.sprite = AssetBundleManager.EnemyBlipDown;
                 }
                 // set blip color
                 switch (enemyPlayer.Profile.Info.Side)
@@ -134,14 +134,14 @@ namespace Radar
             float totalThreshold = playerHeight * 1.5f * Radar.radarYHeightThreshold.Value;
             if (blipPosition.y > totalThreshold)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipUp;
+                blipImage.sprite = AssetBundleManager.EnemyBlipUp;
             }
             else if (blipPosition.y < -totalThreshold)
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDown;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDown;
             } else
             {
-                blipImage.sprite = HaloRadar.EnemyBlipDead;
+                blipImage.sprite = AssetBundleManager.EnemyBlipDead;
             }
             blipImage.color = Radar.lootBlipColor.Value;
 
@@ -192,10 +192,10 @@ namespace Radar
 
         private void SetBlip()
         {
-            var blipInstance = Object.Instantiate(HaloRadar.RadarBliphudPrefab,
-                HaloRadar.radarHudBlipBasePosition.position, HaloRadar.radarHudBlipBasePosition.rotation);
+            var blipInstance = Object.Instantiate(AssetBundleManager.RadarBliphudPrefab,
+                HaloRadar.RadarHudBlipBasePosition.position, HaloRadar.RadarHudBlipBasePosition.rotation);
             blip = blipInstance as GameObject;
-            blip.transform.parent = HaloRadar.radarHudBlipBasePosition.transform;
+            blip.transform.parent = HaloRadar.RadarHudBlipBasePosition.transform;
             blip.transform.SetAsLastSibling();
 
             var blipTransform = blip.transform.Find("Blip/RadarEnemyBlip") as RectTransform;
@@ -230,7 +230,7 @@ namespace Radar
             float delta_a = 1;
             if (Radar.radarScanInterval.Value > 0.8)
             {
-                float ratio = (Time.time - HaloRadar.radarLastUpdateTime) / Radar.radarScanInterval.Value;
+                float ratio = (Time.time - HaloRadar.RadarLastUpdateTime) / Radar.radarScanInterval.Value;
                 delta_a = 1 - ratio * ratio;
             }
             blipImage.color = new Color(r, g, b, a * delta_a);
@@ -238,7 +238,7 @@ namespace Radar
 
         protected void UpdatePosition(bool updatePosition)
         {
-            Quaternion reverseRotation = Quaternion.Inverse(HaloRadar.radarHudBlipBasePosition.rotation);
+            Quaternion reverseRotation = Quaternion.Inverse(HaloRadar.RadarHudBlipBasePosition.rotation);
             blip.transform.localRotation = reverseRotation;
 
             if (!updatePosition)
@@ -251,14 +251,14 @@ namespace Radar
             float offsetRadius = Mathf.Pow(distance / radarRange, 0.4f + Radar.radarDistanceScaleConfig.Value * Radar.radarDistanceScaleConfig.Value / 2.0f);
             // Calculate angle
             // Apply the rotation of the parent transform
-            Vector3 rotatedDirection = HaloRadar.radarHudBlipBasePosition.rotation * Vector3.forward;
+            Vector3 rotatedDirection = HaloRadar.RadarHudBlipBasePosition.rotation * Vector3.forward;
             float angle = Mathf.Atan2(rotatedDirection.x, rotatedDirection.z) * Mathf.Rad2Deg;
             float angleInRadians = Mathf.Atan2(blipPosition.x, blipPosition.z);
 
-            // Get the scale of the radarHudBlipBasePosition
-            Vector3 scale = HaloRadar.radarHudBlipBasePosition.localScale;
+            // Get the scale of the RadarHudBlipBasePosition
+            Vector3 scale = HaloRadar.RadarHudBlipBasePosition.localScale;
             // Multiply the sizeDelta by the scale to account for scaling
-            Vector2 scaledSizeDelta = HaloRadar.radarHudBlipBasePosition.sizeDelta;
+            Vector2 scaledSizeDelta = HaloRadar.RadarHudBlipBasePosition.sizeDelta;
             scaledSizeDelta.x *= scale.x;
             scaledSizeDelta.y *= scale.y;
             // Calculate the radius of the circular boundary
