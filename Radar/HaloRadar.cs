@@ -88,8 +88,14 @@ namespace Radar
 
         private void UpdateRadarSettings(object? sender = null, SettingChangedEventArgs? e = null)
         {
+            if (!gameObject.activeInHierarchy) return; // Don't update if the radar object is disabled
+
             _radarPulseInterval = Mathf.Max(1f, Radar.radarScanInterval.Value);
-            TogglePulseAnimation(Radar.radarEnablePulseConfig.Value);
+
+            if (e == null || e.ChangedSetting == Radar.radarEnablePulseConfig)
+            {
+                TogglePulseAnimation(Radar.radarEnablePulseConfig.Value);
+            }
         }
 
         private void TogglePulseAnimation(bool enable)
@@ -101,14 +107,16 @@ namespace Radar
                 {
                     StopCoroutine(_pulseCoroutine);
                 }
-                _pulseCoroutine = StartCoroutine(PulseCoroutine());;
+
+                _pulseCoroutine = StartCoroutine(PulseCoroutine());
             }
             else if (_pulseCoroutine != null && !enable)
             {
                 StopCoroutine(_pulseCoroutine);
                 _pulseCoroutine = null;
-                _radarHudPulse.localEulerAngles = new Vector3(0, 0, 0); // Reset rotation so it doesn't stop in a weird position
             }
+
+            _radarHudPulse.gameObject.SetActive(enable);
         }
 
         private void Update()
