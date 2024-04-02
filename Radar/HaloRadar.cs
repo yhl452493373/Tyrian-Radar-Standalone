@@ -94,8 +94,13 @@ namespace Radar
 
         private void TogglePulseAnimation(bool enable)
         {
-            if (_pulseCoroutine == null && enable)
+            if (enable)
             {
+                // always create a new coroutine
+                if (_pulseCoroutine != null)
+                {
+                    StopCoroutine(_pulseCoroutine);
+                }
                 _pulseCoroutine = StartCoroutine(PulseCoroutine());;
             }
             else if (_pulseCoroutine != null && !enable)
@@ -178,6 +183,7 @@ namespace Radar
 
             if (!Radar.radarEnableLootConfig.Value)
             {
+                // clear _lootList to avoid FPS drop
                 if (_lootList.Count > 0)
                 {
                     _lootList.Clear();
