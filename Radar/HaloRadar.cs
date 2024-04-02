@@ -15,33 +15,28 @@ namespace Radar
 {
     public class HaloRadar : MonoBehaviour
     {
-        public static GameWorld gameWorld;
-        public static Player player;
+        private GameWorld _gameWorld = null!;
+        private Player _player = null!;
 
-        public static GameObject radarBlipHud;
-
-        public static RectTransform radarHudBlipBasePosition { get; private set; }
-        public static RectTransform radarHudBasePosition { get; private set; }
-        public static RectTransform radarHudPulse { get; private set; }
-        public static RectTransform radarHudBlip { get; private set; }
-        public static Image blipImage;
+        public static RectTransform RadarHudBlipBasePosition { get; private set; } = null!;
+        public static RectTransform RadarHudBasePosition { get; private set; } = null!;
+        
+        private RectTransform _radarHudPulse = null!;
         
         private Coroutine? _pulseCoroutine;
         private float _radarPulseInterval = 1f;
         
-        public static Vector3 radarScaleStart;
-        public static float radarPositionYStart = 0f;
-        public static float radarPositionXStart = 0f;
-        public static bool MapLoaded() => Singleton<GameWorld>.Instantiated;
+        private Vector3 _radarScaleStart;
+        private float _radarPositionYStart = 0f;
+        private float _radarPositionXStart = 0f;
 
-        public static float radarLastUpdateTime = 0;
-        public float radarInterval = -1;
+        public static float RadarLastUpdateTime = 0;
 
-        public HashSet<int> enemyList = new HashSet<int>();
-        public List<BlipPlayer> enemyCustomObject = new List<BlipPlayer>();
+        private readonly HashSet<int> _enemyList = new HashSet<int>();
+        private readonly List<BlipPlayer> _enemyCustomObject = new List<BlipPlayer>();
 
-        public HashSet<string> lootList = new HashSet<string>();
-        public List<BlipLoot> lootCustomObject = new List<BlipLoot>();
+        private readonly HashSet<string> _lootList = new HashSet<string>();
+        private readonly List<BlipLoot> _lootCustomObject = new List<BlipLoot>();
 
         private void Awake()
         {
@@ -52,29 +47,29 @@ namespace Radar
                 return;
             }
             
-            gameWorld = Singleton<GameWorld>.Instance;
-            if (gameWorld.MainPlayer == null)
+            _gameWorld = Singleton<GameWorld>.Instance;
+            if (_gameWorld.MainPlayer == null)
             {
                 Radar.Log.LogWarning("MainPlayer is null.");
                 Destroy(gameObject);
                 return;
             }
             
-            player = gameWorld.MainPlayer;
+            _player = _gameWorld.MainPlayer;
                 
-            radarHudBasePosition = (transform.Find("Radar") as RectTransform)!;
-            radarHudBlipBasePosition = (transform.Find("Radar/RadarBorder") as RectTransform)!;
-            radarHudBlipBasePosition.SetAsLastSibling();
-            radarHudPulse = (transform.Find("Radar/RadarPulse") as RectTransform)!;
-            radarScaleStart = radarHudBasePosition.localScale;
-            radarPositionYStart = radarHudBasePosition.position.y;
-            radarPositionXStart = radarHudBasePosition.position.x;
-            radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
-            radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
+            RadarHudBasePosition = (transform.Find("Radar") as RectTransform)!;
+            RadarHudBlipBasePosition = (transform.Find("Radar/RadarBorder") as RectTransform)!;
+            RadarHudBlipBasePosition.SetAsLastSibling();
+            _radarHudPulse = (transform.Find("Radar/RadarPulse") as RectTransform)!;
+            _radarScaleStart = RadarHudBasePosition.localScale;
+            _radarPositionYStart = RadarHudBasePosition.position.y;
+            _radarPositionXStart = RadarHudBasePosition.position.x;
+            RadarHudBasePosition.position = new Vector2(_radarPositionXStart + Radar.radarOffsetXConfig.Value, _radarPositionYStart + Radar.radarOffsetYConfig.Value);
+            RadarHudBasePosition.localScale = new Vector2(_radarScaleStart.x * Radar.radarSizeConfig.Value, _radarScaleStart.y * Radar.radarSizeConfig.Value);
 
             
-            radarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
-            radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
+            RadarHudBlipBasePosition.GetComponent<Image>().color = Radar.backgroundColor.Value;
+            _radarHudPulse.GetComponent<Image>().color = Radar.backgroundColor.Value;
             transform.Find("Radar/RadarBackground").GetComponent<Image>().color = Radar.backgroundColor.Value;
             
             Radar.Log.LogInfo("Radar loaded");
@@ -107,16 +102,15 @@ namespace Radar
             {
                 StopCoroutine(_pulseCoroutine);
                 _pulseCoroutine = null;
-                radarHudPulse.localEulerAngles = new Vector3(0, 0, 0); // Reset rotation so it doesn't stop in a weird position
+                _radarHudPulse.localEulerAngles = new Vector3(0, 0, 0); // Reset rotation so it doesn't stop in a weird position
             }
         }
 
         private void Update()
         {
-            
-            radarHudBasePosition.position = new Vector2(radarPositionXStart + Radar.radarOffsetXConfig.Value, radarPositionYStart + Radar.radarOffsetYConfig.Value);
-            radarHudBasePosition.localScale = new Vector2(radarScaleStart.x * Radar.radarSizeConfig.Value, radarScaleStart.y * Radar.radarSizeConfig.Value);
-            radarHudBlipBasePosition.GetComponent<RectTransform>().eulerAngles = new Vector3(0, 0, transform.parent.transform.eulerAngles.y);
+            RadarHudBasePosition.position = new Vector2(_radarPositionXStart + Radar.radarOffsetXConfig.Value, _radarPositionYStart + Radar.radarOffsetYConfig.Value);
+            RadarHudBasePosition.localScale = new Vector2(_radarScaleStart.x * Radar.radarSizeConfig.Value, _radarScaleStart.y * Radar.radarSizeConfig.Value);
+            RadarHudBlipBasePosition.eulerAngles = new Vector3(0, 0, transform.parent.transform.eulerAngles.y);
             
             UpdateLoot();
             long rslt = UpdateActivePlayer();
@@ -135,7 +129,7 @@ namespace Radar
                     float angle = Mathf.Lerp(0f, 1f, 1 - t) * 360;
 
                     // Apply the scale to all axes
-                    radarHudPulse.localEulerAngles = new Vector3(0, 0, angle);
+                    _radarHudPulse.localEulerAngles = new Vector3(0, 0, angle);
                     yield return null;
                 }
                 // Pause for the specified duration
@@ -145,31 +139,31 @@ namespace Radar
 
         private long UpdateActivePlayer()
         {
-            if (Time.time - radarLastUpdateTime < Radar.radarScanInterval.Value)
+            if (Time.time - RadarLastUpdateTime < Radar.radarScanInterval.Value)
             {
                 return -1;
             }
             else
             {
-                radarLastUpdateTime = Time.time;
+                RadarLastUpdateTime = Time.time;
             }
-            IEnumerable<Player> allPlayers = gameWorld.AllPlayersEverExisted;
+            IEnumerable<Player> allPlayers = _gameWorld.AllPlayersEverExisted;
 
-            if (allPlayers.Count() == enemyList.Count + 1)
+            if (allPlayers.Count() == _enemyList.Count + 1)
             {
                 return -2;
             }
 
             foreach (Player enemyPlayer in allPlayers)
             {
-                if (enemyPlayer == null || enemyPlayer == player)
+                if (enemyPlayer == null || enemyPlayer == _player)
                 {
                     continue;
                 }
-                if (!enemyList.Contains(enemyPlayer.Id))
+                if (!_enemyList.Contains(enemyPlayer.Id))
                 {
-                    enemyList.Add(enemyPlayer.Id);
-                    enemyCustomObject.Add(new BlipPlayer(enemyPlayer));
+                    _enemyList.Add(enemyPlayer.Id);
+                    _enemyCustomObject.Add(new BlipPlayer(enemyPlayer));
                 }
             }
             return 0;
@@ -177,55 +171,55 @@ namespace Radar
 
         private void UpdateLoot()
         {
-            if (Time.time - radarLastUpdateTime < Radar.radarScanInterval.Value)
+            if (Time.time - RadarLastUpdateTime < Radar.radarScanInterval.Value)
             {
                 return;
             }
 
             if (!Radar.radarEnableLootConfig.Value)
             {
-                if (lootList.Count > 0)
+                if (_lootList.Count > 0)
                 {
-                    lootList.Clear();
-                    foreach (var loot in lootCustomObject)
+                    _lootList.Clear();
+                    foreach (var loot in _lootCustomObject)
                     {
                         loot.DestoryLoot();
                     }
-                    lootCustomObject.Clear();
+                    _lootCustomObject.Clear();
                 }
                 return;
             }
 
             HashSet<string> checkedLoot = new HashSet<string>();
-            var allLoot = gameWorld.LootItems;
+            var allLoot = _gameWorld.LootItems;
             foreach (LootItem loot in allLoot.GetValuesEnumerator())
             {
                 checkedLoot.Add(loot.ItemId);
-                if (!lootList.Contains(loot.ItemId))
+                if (!_lootList.Contains(loot.ItemId))
                 {
-                    lootList.Add(loot.ItemId);
-                    lootCustomObject.Add(new BlipLoot(loot));
+                    _lootList.Add(loot.ItemId);
+                    _lootCustomObject.Add(new BlipLoot(loot));
                 }
             }
 
-            foreach (var item in lootCustomObject.Where(item => !checkedLoot.Contains(item.itemId)).ToList()) // ToList creates a copy to avoid modification during enumeration
+            foreach (var item in _lootCustomObject.Where(item => !checkedLoot.Contains(item.itemId)).ToList()) // ToList creates a copy to avoid modification during enumeration
             {
                 item.DestoryLoot();
-                lootList.Remove(item.itemId);
+                _lootList.Remove(item.itemId);
             }
 
-            lootCustomObject.RemoveAll(item => !checkedLoot.Contains(item.itemId));
+            _lootCustomObject.RemoveAll(item => !checkedLoot.Contains(item.itemId));
         }
 
         private void UpdateRadar(bool positionUpdate = true)
         {
-            Target.setPlayerPosition(player.Transform.position);
+            Target.setPlayerPosition(_player.Transform.position);
             Target.setRadarRange(Radar.radarRangeConfig.Value);
-            foreach (var obj in enemyCustomObject)
+            foreach (var obj in _enemyCustomObject)
             {
                 obj.Update(positionUpdate);
             }
-            foreach (var obj in lootCustomObject)
+            foreach (var obj in _lootCustomObject)
             {
                 obj.Update(positionUpdate);
             }
