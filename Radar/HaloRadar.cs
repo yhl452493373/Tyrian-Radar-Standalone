@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using LootItem = EFT.Interactive.LootItem;
 using System.Linq;
+using BepInEx.Configuration;
 using Object = UnityEngine.Object;
 
 namespace Radar
@@ -25,9 +26,9 @@ namespace Radar
         public static RectTransform radarHudBlip { get; private set; }
         public static Image blipImage;
         
-        public static Coroutine pulseCoroutine;
-        public static float animationDuration = 1f;
-        public static float pauseDuration = 4f;
+        private Coroutine? _pulseCoroutine;
+        private float _radarPulseInterval = 1f;
+        
         public static Vector3 radarScaleStart;
         public static float radarPositionYStart = 0f;
         public static float radarPositionXStart = 0f;
@@ -78,6 +79,37 @@ namespace Radar
             
             Radar.Log.LogInfo("Radar loaded");
         }
+        
+        private void OnEnable()
+        {
+            Radar.Instance.Config.SettingChanged += UpdateRadarSettings;
+            UpdateRadarSettings();
+        }
+        
+        private void OnDisable()
+        {
+            Radar.Instance.Config.SettingChanged -= UpdateRadarSettings;
+        }
+
+        private void UpdateRadarSettings(object? sender = null, SettingChangedEventArgs? e = null)
+        {
+            _radarPulseInterval = Mathf.Max(1f, Radar.radarScanInterval.Value);
+            TogglePulseAnimation(Radar.radarEnablePulseConfig.Value);
+        }
+
+        private void TogglePulseAnimation(bool enable)
+        {
+            if (_pulseCoroutine == null && enable)
+            {
+                _pulseCoroutine = StartCoroutine(PulseCoroutine());;
+            }
+            else if (_pulseCoroutine != null && !enable)
+            {
+                StopCoroutine(_pulseCoroutine);
+                _pulseCoroutine = null;
+                radarHudPulse.localEulerAngles = new Vector3(0, 0, 0); // Reset rotation so it doesn't stop in a weird position
+            }
+        }
 
         private void Update()
         {
@@ -89,43 +121,17 @@ namespace Radar
             UpdateLoot();
             long rslt = UpdateActivePlayer();
             UpdateRadar(rslt != -1);
-
-            if (radarInterval != Radar.radarScanInterval.Value)
-            {
-                radarInterval = Radar.radarScanInterval.Value;
-                if (Radar.radarEnablePulseConfig.Value)
-                {
-                    StartPulseAnimation();
-                }
-            }
-            
-        }
-
-        private void StartPulseAnimation()
-        {
-            // Stop any previous pulse coroutine
-            if (pulseCoroutine != null)
-            {
-                StopCoroutine(pulseCoroutine);
-            }
-            // Start the pulse coroutine
-            pulseCoroutine = StartCoroutine(PulseCoroutine());
         }
 
         private IEnumerator PulseCoroutine()
         {
-            float interval = Radar.radarScanInterval.Value;
-            if (interval < 1)
-            {
-                interval = 1;
-            }
             while (true)
             {
                 // Rotate from 360 to 0 over the animation duration
                 float t = 0f;
                 while (t < 1.0f)
                 {
-                    t += Time.deltaTime / interval;
+                    t += Time.deltaTime / _radarPulseInterval;
                     float angle = Mathf.Lerp(0f, 1f, 1 - t) * 360;
 
                     // Apply the scale to all axes
