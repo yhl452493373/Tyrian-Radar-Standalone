@@ -1,4 +1,3 @@
-using Aki.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -8,12 +7,21 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-using CurrencyUtil = GClass2334;
+#if SIT
+using StayInTarkov;
+#else
+using Aki.Reflection.Utils;
+#endif
 
 internal static class TraderClassExtensions
 {
     private static ISession _Session;
+
+#if SIT
+    private static ISession Session => _Session ??= StayInTarkovHelperConstants.GetMainApp().GetClientBackEndSession();
+#else
     private static ISession Session => _Session ??= ClientAppUtils.GetMainApp().GetClientBackEndSession();
+#endif
 
     private static readonly FieldInfo SupplyDataField =
         typeof(TraderClass).GetField("supplyData_0", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -36,7 +44,12 @@ internal static class TraderClassExtensions
 
 class ItemExtensions
 {
+#if SIT
+    public static ISession Session = StayInTarkovHelperConstants.GetMainApp().GetClientBackEndSession();
+#else
     public static ISession Session = ClientAppUtils.GetMainApp().GetClientBackEndSession();
+#endif
+
 
     public sealed class TraderOffer
     {
@@ -57,12 +70,14 @@ class ItemExtensions
     public static TraderOffer GetTraderOffer(Item item, TraderClass trader)
     {
         var result = trader.GetUserItemPrice(item);
-        return result is null ? null : new(
-            trader.LocalizedName,
-            result.Value.Amount,
-            trader.GetSupplyData().CurrencyCourses[result.Value.CurrencyId],
-            item.StackObjectsCount
-        );
+        return result is null
+            ? null
+            : new(
+                trader.LocalizedName,
+                result.Value.Amount,
+                trader.GetSupplyData().CurrencyCourses[result.Value.CurrencyId],
+                item.StackObjectsCount
+            );
     }
 
     public static IEnumerable<TraderOffer> GetAllTraderOffers(Item item)
@@ -79,8 +94,10 @@ class ItemExtensions
                     item.StackObjectsCount = 1;
                     item.UnlimitedCount = false;
                 }
+
                 break;
         }
+
         return Session.Traders
             .Select(trader => GetTraderOffer(item, trader))
             .Where(offer => offer is not null)

@@ -4,7 +4,11 @@ using Comfort.Common;
 using EFT;
 using EFT.Interactive;
 using UnityEngine;
+#if SIT
+using StayInTarkov;
+#else
 using Aki.Reflection.Patching;
+#endif
 
 namespace Radar.Patches
 {
@@ -13,7 +17,7 @@ namespace Radar.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GameWorld).GetMethod("OnGameStarted", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            return typeof(GameWorld).GetMethod(nameof(GameWorld.OnGameStarted), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         [PatchPostfix]

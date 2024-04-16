@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net48</TargetFramework>
 		<AssemblyName>Tyrian-Radar</AssemblyName>
-		<DependencyVersion>3.8.0</DependencyVersion>
+		<DependencyVersion>0.14.1.2.29197</DependencyVersion>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -13,6 +13,26 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<Optimize>False</Optimize>
 	</PropertyGroup>
+
+	<Choose>
+		<When Condition="$(DependencyVersion.EndsWith('sit')) == true">
+			<PropertyGroup>
+				<DefineConstants>SIT</DefineConstants>
+			</PropertyGroup>
+			<ItemGroup>
+				<Reference Include="..\dependencies\$(DependencyVersion)\StayInTarkov.dll">
+					<Private>True</Private>
+				</Reference>
+			</ItemGroup>
+		</When>
+		<Otherwise>
+			<ItemGroup>
+				<Reference Include="..\dependencies\$(DependencyVersion)\Aki.Reflection.dll">
+					<Private>False</Private>
+				</Reference>
+			</ItemGroup>
+		</Otherwise>
+	</Choose>
 
 	<ItemGroup>
 		<Reference Include="..\dependencies\$(DependencyVersion)\Assembly-CSharp.dll">
